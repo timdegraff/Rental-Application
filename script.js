@@ -1,6 +1,6 @@
 // Import Firebase modules
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, getDoc, doc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, getDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
 // Your web app's Firebase configuration
@@ -209,9 +209,10 @@ if (document.getElementById('applicationsTable')) {
     const passcode = prompt('Enter admin passcode:');
     if (passcode === 'Porky9') {
       document.getElementById('adminContent').style.display = 'block';
-      onSnapshot(collection(db, 'applications'), (snapshot) => {
-        const tbody = document.querySelector('#applicationsTable tbody');
-        if (tbody) {
+      const table = document.getElementById('applicationsTable');
+      const tbody = table ? table.querySelector('tbody') : null;
+      if (tbody) {
+        onSnapshot(collection(db, 'applications'), (snapshot) => {
           tbody.innerHTML = '';
           snapshot.forEach((doc) => {
             const data = doc.data();
@@ -219,6 +220,7 @@ if (document.getElementById('applicationsTable')) {
             const estTime = data.submitted ? new Date(data.submitted).toLocaleString('en-US', { timeZone: 'America/New_York' }) : 'N/A';
             const messagePreview = (data.personalMessage || '').substring(0, 60) + (data.personalMessage && data.personalMessage.length > 60 ? '...' : '');
             const row = document.createElement('tr');
+            row.setAttribute('data-id', doc.id); // Store ID for notes
             row.innerHTML = `
               <td>${data.fullName || 'N/A'}</td>
               <td>${occupants.length > 0 ? occupants[0].age || 'N/A' : 'N/A'}</td>
@@ -232,10 +234,12 @@ if (document.getElementById('applicationsTable')) {
             `;
             tbody.appendChild(row);
           });
-        } else {
-          console.error('Table body not found');
-        }
-      });
+        }, (error) => {
+          console.error('Snapshot error:', error);
+        });
+      } else {
+        console.error('Table body not found');
+      }
     } else {
       alert('Invalid passcode');
     }
@@ -281,21 +285,29 @@ function viewDetails(id) {
       content += `<p>${data.personalMessage || 'N/A'}</p>`;
       content += '<h3>Comments/Questions</h3>';
       content += `<p>${data.comments || 'N/A'}</p>`;
-      content += `<p><strong>Submitted:</strong> ${data.submitted ? new Date(data.submitted).toLocaleString('en-US', { timeZone: 'America/New_York' }) : 'N/A'}</p>`;
+      content += `<p><strong>Date Submitted:</strong> ${data.submitted ? new Date(data.submitted).toLocaleString('en-US', { timeZone: 'America/New_York' }) : 'N/A'}</p>`;
+      content += '<h3>Admin Notes</h3>';
+      content += `<p id="notesDisplay">${(data.notes && data.notes.admin) || 'No notes yet'}</p>`;
 
       const modal = document.getElementById('detailModal');
       const contentDiv = document.getElementById('detailContent');
-      if (modal && contentDiv) {
+      const notesInput = document.getElementById('notesInput');
+      const saveNotesBtn = document.getElementById('saveNotesBtn');
+      if (modal && contentDiv && notesInput && saveNotesBtn) {
         contentDiv.innerHTML = content;
         modal.style.display = 'block';
+        notesInput.value = (data.notes && data.notes.admin) || '';
+        saveNotesBtn.onclick = () => saveNotes(id, notesInput.value);
       } else {
-        console.error('Detail modal or content div not found. Creating fallback...');
+        console.error('Modal elements not found. Creating fallback...');
         const fallbackModal = document.createElement('div');
         fallbackModal.id = 'detailModal';
         fallbackModal.className = 'modal';
-        fallbackModal.innerHTML = `<span class="close" onclick="closeDetailModal()">×</span><div id="detailContent"></div>`;
+        fallbackModal.innerHTML = `<span class="close" onclick="closeDetailModal()">×</span><div id="detailContent"></div><textarea id="notesInput" class="notes-input" placeholder="Add your notes here..."></textarea><button id="saveNotesBtn">Save Notes</button>`;
         document.body.appendChild(fallbackModal);
         document.getElementById('detailContent').innerHTML = content;
+        document.getElementById('notesInput').value = (data.notes && data.notes.admin) || '';
+        document.getElementById('saveNotesBtn').onclick = () => saveNotes(id, document.getElementById('notesInput').value);
         fallbackModal.style.display = 'block';
       }
     } else {
@@ -314,13 +326,27 @@ function closeDetailModal() {
   }
 }
 
+function saveNotes(id, notes) {
+  const docRef = doc(db, 'applications', id);
+  setDoc(docRef, { notes: { admin: notes } }, { merge: true })
+    .then(() => {
+      console.log('Notes saved successfully');
+      alert('Notes saved!');
+      closeDetailModal();
+    })
+    .catch((error) => {
+      console.error('Error saving notes:', error);
+      alert('Error saving notes: ' + error.message);
+    });
+}
+
 function sortTable(n) {
   const table = document.getElementById('applicationsTable');
   if (table) {
     let switching = true;
     let dir = localStorage.getItem(`sortDir_${n}`) === 'desc' ? 'desc' : 'asc';
     let switchcount = 0;
-    const th = document.getElementById(`sort${['Name', 'Age', 'Total', 'Income', 'Job', 'Company', 'Time', 'Message'][n]}`);
+    const th = document.getElementById(`sort${['Name', 'Age', 'Total', 'Income', 'Job', 'Company', 'Date', 'Message'][n]}`);
     // Clear previous sort indicators
     document.querySelectorAll('th').forEach(t => {
       t.classList.remove('sorted-asc', 'sorted-desc');
