@@ -44,13 +44,14 @@ function closeModal() {
 }
 
 function addOccupant() {
+  console.log('Adding occupant...'); // Debug log
   const occupantsDiv = document.getElementById('occupants');
   if (!occupantsDiv) {
     console.error('Occupants div not found');
     return;
   }
   let occupantCount = occupantsDiv.children.length + 1;
-  if (occupantCount >= 6) {
+  if (occupantCount > 6) {
     alert("Maximum 6 occupants reached.");
     return;
   }
@@ -79,12 +80,14 @@ function addOccupant() {
     ${occupantCount > 1 ? '<button type="button" class="delete-occupant" onclick="deleteOccupant(this)">X</button>' : ''}
   `;
   occupantsDiv.appendChild(div);
+  console.log('Occupant added, count:', occupantCount);
 }
 
 function deleteOccupant(button) {
   const occupantsDiv = document.getElementById('occupants');
   if (occupantsDiv && occupantsDiv.children.length > 1) {
     button.parentElement.remove();
+    console.log('Occupant deleted, remaining:', occupantsDiv.children.length);
   }
 }
 
@@ -241,32 +244,39 @@ function viewDetails(id) {
   getDoc(docRef).then((docSnap) => {
     if (docSnap.exists()) {
       const data = docSnap.data();
-      const content = `
-        <h2>Application Details</h2>
-        <p><strong>Full Name:</strong> ${data.fullName || 'N/A'}</p>
-        <p><strong>Date of Birth:</strong> ${data.dob || 'N/A'}</p>
-        <p><strong>Current Address:</strong> ${data.currentAddress || 'N/A'}</p>
-        <p><strong>Phone:</strong> ${data.phone || 'N/A'}</p>
-        <p><strong>Email:</strong> ${data.email || 'N/A'}</p>
-        <h3>Employment</h3>
-        <p><strong>Job Title:</strong> ${data.jobTitle || 'N/A'}</p>
-        <p><strong>Employer:</strong> ${data.employer || 'N/A'}</p>
-        <p><strong>Length of Employment (years):</strong> ${data.employmentLength || 'N/A'}</p>
-        <p><strong>Monthly Income:</strong> ${data.income || 'N/A'}</p>
-        <h3>Occupants</h3>
-        ${data.occupants && data.occupants.length > 0 ? data.occupants.map(o => `
-          <p><strong>Name:</strong> ${o.name || 'N/A'}, <strong>Relationship:</strong> ${o.relation || 'N/A'}, <strong>Age:</strong> ${o.age || 'N/A'}, <strong>Gender:</strong> ${o.gender || 'N/A'}</p>
-        `).join('') : '<p>No occupants listed</p>'}
-        <h3>References</h3>
-        ${data.references && data.references.length > 0 ? data.references.map(r => `
-          <p><strong>Name:</strong> ${r.name || 'N/A'}, <strong>Phone:</strong> ${r.phone || 'N/A'}, <strong>Relationship:</strong> ${r.relation || 'N/A'}</p>
-        `).join('') : '<p>No references listed</p>'}
-        <h3>Personal Message</h3>
-        <p>${data.personalMessage || 'N/A'}</p>
-        <h3>Comments/Questions</h3>
-        <p>${data.comments || 'N/A'}</p>
-        <p><strong>Submitted:</strong> ${data.submitted ? new Date(data.submitted).toLocaleString('en-US', { timeZone: 'America/New_York' }) : 'N/A'}</p>
-      `;
+      let content = '<h2>Application Details</h2>';
+      content += `<p><strong>Full Name:</strong> ${data.fullName || 'N/A'}</p>`;
+      content += `<p><strong>Date of Birth:</strong> ${data.dob || 'N/A'}</p>`;
+      content += `<p><strong>Current Address:</strong> ${data.currentAddress || 'N/A'}</p>`;
+      content += `<p><strong>Phone:</strong> ${data.phone || 'N/A'}</p>`;
+      content += `<p><strong>Email:</strong> ${data.email || 'N/A'}</p>`;
+      content += '<h3>Employment</h3>';
+      content += `<p><strong>Job Title:</strong> ${data.jobTitle || 'N/A'}</p>`;
+      content += `<p><strong>Employer:</strong> ${data.employer || 'N/A'}</p>`;
+      content += `<p><strong>Length of Employment (years):</strong> ${data.employmentLength || 'N/A'}</p>`;
+      content += `<p><strong>Monthly Income:</strong> ${data.income || 'N/A'}</p>`;
+      content += '<h3>Occupants</h3>';
+      if (data.occupants && data.occupants.length > 0) {
+        data.occupants.forEach((o, i) => {
+          content += `<p><strong>Occupant ${i + 1} - Name:</strong> ${o.name || 'N/A'}, <strong>Relationship:</strong> ${o.relation || 'N/A'}, <strong>Age:</strong> ${o.age || 'N/A'}, <strong>Gender:</strong> ${o.gender || 'N/A'}</p>`;
+        });
+      } else {
+        content += '<p>No occupants listed</p>';
+      }
+      content += '<h3>References</h3>';
+      if (data.references && data.references.length > 0) {
+        data.references.forEach((r, i) => {
+          content += `<p><strong>Reference ${i + 1} - Name:</strong> ${r.name || 'N/A'}, <strong>Phone:</strong> ${r.phone || 'N/A'}, <strong>Relationship:</strong> ${r.relation || 'N/A'}</p>`;
+        });
+      } else {
+        content += '<p>No references listed</p>';
+      }
+      content += '<h3>Personal Message</h3>';
+      content += `<p>${data.personalMessage || 'N/A'}</p>`;
+      content += '<h3>Comments/Questions</h3>';
+      content += `<p>${data.comments || 'N/A'}</p>`;
+      content += `<p><strong>Submitted:</strong> ${data.submitted ? new Date(data.submitted).toLocaleString('en-US', { timeZone: 'America/New_York' }) : 'N/A'}</p>`;
+
       const modal = document.getElementById('detailModal');
       const contentDiv = document.getElementById('detailContent');
       if (modal && contentDiv) {
@@ -297,6 +307,13 @@ function sortTable(n) {
     let switching = true;
     let dir = localStorage.getItem(`sortDir_${n}`) === 'desc' ? 'desc' : 'asc';
     let switchcount = 0;
+    const th = document.getElementById(`sort${['Name', 'Age', 'Total', 'Income', 'Job', 'Company', 'Time'][n]}`);
+    // Clear previous sort indicators
+    document.querySelectorAll('th').forEach(t => {
+      t.classList.remove('sorted-asc', 'sorted-desc');
+    });
+    th.classList.add(`sorted-${dir}`);
+
     while (switching) {
       switching = false;
       const rows = table.rows;
