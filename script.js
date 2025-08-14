@@ -90,42 +90,48 @@ if (document.getElementById('applicationForm')) {
       alert("Please fill all required fields.");
       return;
     }
-    const formData = new FormData(form);
-    const data = Object.fromEntries(formData);
-    data.occupants = [];
-    const names = formData.getAll('occupantName[]');
-    const ages = formData.getAll('occupantAge[]');
-    const genders = formData.getAll('occupantGender[]');
-    const relations = formData.getAll('occupantRelation[]');
-    for (let i = 0; i < names.length; i++) {
-      if (names[i]) data.occupants.push({ name: names[i], age: ages[i], gender: genders[i], relation: relations[i] });
-    }
-    data.references = [];
-    const refNames = formData.getAll('refName[]');
-    const refPhones = formData.getAll('refPhone[]');
-    const refRelations = formData.getAll('refRelation[]');
-    for (let i = 0; i < refNames.length; i++) {
-      data.references.push({ name: refNames[i], phone: refPhones[i], relation: refRelations[i] });
-    }
-    data.submitted = new Date();
 
-    let idUrl = '';
-    const file = formData.get('idUpload');
-    if (file && file.size <= 5000000 && file.size <= 20000000) {
-      const storageRef = ref(storage, `ids/${Date.now()}_${file.name}`);
-      await uploadBytes(storageRef, file);
-      idUrl = await getDownloadURL(storageRef);
-    }
-    data.idUrl = idUrl;
+    // Ensure Firebase is ready before submission
+    try {
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData);
+      data.occupants = [];
+      const names = formData.getAll('occupantName[]');
+      const ages = formData.getAll('occupantAge[]');
+      const genders = formData.getAll('occupantGender[]');
+      const relations = formData.getAll('occupantRelation[]');
+      for (let i = 0; i < names.length; i++) {
+        if (names[i]) data.occupants.push({ name: names[i], age: ages[i], gender: genders[i], relation: relations[i] });
+      }
+      data.references = [];
+      const refNames = formData.getAll('refName[]');
+      const refPhones = formData.getAll('refPhone[]');
+      const refRelations = formData.getAll('refRelation[]');
+      for (let i = 0; i < refNames.length; i++) {
+        data.references.push({ name: refNames[i], phone: refPhones[i], relation: refRelations[i] });
+      }
+      data.submitted = new Date();
 
-    await addDoc(collection(db, 'applications'), data);
-    // Clear the page and show thank-you message
-    document.getElementById('content').innerHTML = `
-      <header>
-          <h1>Higgins Woodland Retreat - Rental Application</h1>
-      </header>
-      <p style="text-align: center;">Thank you for your application. We will be in touch soon!</p>
-    `;
+      let idUrl = '';
+      const file = formData.get('idUpload');
+      if (file && file.size <= 5000000 && file.size <= 20000000) {
+        const storageRef = ref(storage, `ids/${Date.now()}_${file.name}`);
+        await uploadBytes(storageRef, file);
+        idUrl = await getDownloadURL(storageRef);
+      }
+      data.idUrl = idUrl;
+
+      await addDoc(collection(db, 'applications'), data);
+      // Clear page and show thank-you message
+      document.getElementById('content').innerHTML = `
+        <header>
+            <h1>Higgins Woodland Retreat - Rental Application</h1>
+        </header>
+        <p style="text-align: center;">Thank you for your application. We will be in touch soon!</p>
+      `;
+    } catch (error) {
+      alert("Error submitting application: " + error.message);
+    }
   });
 }
 
@@ -141,9 +147,9 @@ if (document.getElementById('applicationsTable')) {
           const data = doc.data();
           const row = document.createElement('tr');
           row.innerHTML = `
-            <td>${data.fullName}</td>
-            <td>${data.income}</td>
-            <td>${data.submitted.toLocaleString()}</td>
+            <td>${data.fullName || 'N/A'}</td>
+            <td>${data.income || 'N/A'}</td>
+            <td>${data.submitted ? data.submitted.toLocaleString() : 'N/A'}</td>
             <td><button onclick="viewDetails('${doc.id}')">View</button></td>
           `;
           tbody.appendChild(row);
