@@ -1,6 +1,6 @@
 // Import Firebase modules
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, getDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, getDoc, doc, Timestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
 // Your web app's Firebase configuration
@@ -183,7 +183,11 @@ if (document.getElementById('applicationForm')) {
         for (let i = 0; i < refNames.length; i++) {
           data.references.push({ name: refNames[i], phone: refPhones[i], relation: refRelations[i] });
         }
-        data.submitted = new Date();
+        if (data.submitted instanceof Timestamp) {
+          data.submitted = data.submitted.toDate(); // Convert Firestore Timestamp to JS Date
+        } else {
+          data.submitted = new Date();
+        }
 
         await addDoc(collection(db, 'applications'), data);
         document.getElementById('content').innerHTML = `
@@ -217,10 +221,8 @@ if (document.getElementById('applicationsTable')) {
           snapshot.forEach((doc) => {
             const data = doc.data();
             const occupants = data.occupants || [];
-            const estTime = data.submitted ? new Date(data.submitted).toLocaleString('en-US', { timeZone: 'America/New_York' }) : 'N/A';
-            const messagePreview = (data.personalMessage || '').substring(0, 60) + (data.personalMessage && data.personalMessage.length > 60 ? '...' : '');
+            const estTime = data.submitted ? new Date(data.submitted).toLocaleString('en-US', { timeZone: 'America/New_York', hour12: true }) : 'N/A';
             const row = document.createElement('tr');
-            row.setAttribute('data-id', doc.id); // Store ID for notes
             row.innerHTML = `
               <td>${data.fullName || 'N/A'}</td>
               <td>${occupants.length > 0 ? occupants[0].age || 'N/A' : 'N/A'}</td>
@@ -229,8 +231,17 @@ if (document.getElementById('applicationsTable')) {
               <td>${data.jobTitle || 'N/A'}</td>
               <td>${data.employer || 'N/A'}</td>
               <td>${estTime}</td>
-              <td>${messagePreview}</td>
-              <td><button onclick="viewDetails('${doc.id}')">View</button></td>
+              <td>${data.personalMessage || 'N/A'}</td>
+              <td>${data.dob || 'N/A'}</td>
+              <td>${data.currentAddress || 'N/A'}</td>
+              <td>${data.phone || 'N/A'}</td>
+              <td>${data.email || 'N/A'}</td>
+              <td>${data.employmentLength || 'N/A'}</td>
+              <td>${data.petType || 'N/A'}</td>
+              <td>${data.petAge || 'N/A'}</td>
+              <td>${data.petWeight || 'N/A'}</td>
+              <td>${data.petBehavior || 'N/A'}</td>
+              <td>${data.comments || 'N/A'}</td>
             `;
             tbody.appendChild(row);
           });
@@ -249,104 +260,13 @@ if (document.getElementById('applicationsTable')) {
   });
 }
 
-function viewDetails(id) {
-  const docRef = doc(db, 'applications', id);
-  getDoc(docRef).then((docSnap) => {
-    if (docSnap.exists()) {
-      const data = docSnap.data();
-      let content = '<h2>Application Details</h2>';
-      content += `<p><strong>Full Name:</strong> ${data.fullName || 'N/A'}</p>`;
-      content += `<p><strong>Date of Birth:</strong> ${data.dob || 'N/A'}</p>`;
-      content += `<p><strong>Current Address:</strong> ${data.currentAddress || 'N/A'}</p>`;
-      content += `<p><strong>Phone:</strong> ${data.phone || 'N/A'}</p>`;
-      content += `<p><strong>Email:</strong> ${data.email || 'N/A'}</p>`;
-      content += '<h3>Employment</h3>';
-      content += `<p><strong>Job Title:</strong> ${data.jobTitle || 'N/A'}</p>`;
-      content += `<p><strong>Employer:</strong> ${data.employer || 'N/A'}</p>`;
-      content += `<p><strong>Length of Employment (years):</strong> ${data.employmentLength || 'N/A'}</p>`;
-      content += `<p><strong>Monthly Income:</strong> ${data.income || 'N/A'}</p>`;
-      content += '<h3>Occupants</h3>';
-      if (data.occupants && data.occupants.length > 0) {
-        data.occupants.forEach((o, i) => {
-          content += `<p><strong>Occupant ${i + 1} - Name:</strong> ${o.name || 'N/A'}, <strong>Relationship:</strong> ${o.relation || 'N/A'}, <strong>Age:</strong> ${o.age || 'N/A'}, <strong>Gender:</strong> ${o.gender || 'N/A'}</p>`;
-        });
-      } else {
-        content += '<p>No occupants listed</p>';
-      }
-      content += '<h3>References</h3>';
-      if (data.references && data.references.length > 0) {
-        data.references.forEach((r, i) => {
-          content += `<p><strong>Reference ${i + 1} - Name:</strong> ${r.name || 'N/A'}, <strong>Phone:</strong> ${r.phone || 'N/A'}, <strong>Relationship:</strong> ${r.relation || 'N/A'}</p>`;
-        });
-      } else {
-        content += '<p>No references listed</p>';
-      }
-      content += '<h3>Personal Message</h3>';
-      content += `<p>${data.personalMessage || 'N/A'}</p>`;
-      content += '<h3>Comments/Questions</h3>';
-      content += `<p>${data.comments || 'N/A'}</p>`;
-      content += `<p><strong>Date Submitted:</strong> ${data.submitted ? new Date(data.submitted).toLocaleString('en-US', { timeZone: 'America/New_York' }) : 'N/A'}</p>`;
-      content += '<h3>Admin Notes</h3>';
-      content += `<p id="notesDisplay">${(data.notes && data.notes.admin) || 'No notes yet'}</p>`;
-
-      const modal = document.getElementById('detailModal');
-      const contentDiv = document.getElementById('detailContent');
-      const notesInput = document.getElementById('notesInput');
-      const saveNotesBtn = document.getElementById('saveNotesBtn');
-      if (modal && contentDiv && notesInput && saveNotesBtn) {
-        contentDiv.innerHTML = content;
-        modal.style.display = 'block';
-        notesInput.value = (data.notes && data.notes.admin) || '';
-        saveNotesBtn.onclick = () => saveNotes(id, notesInput.value);
-      } else {
-        console.error('Modal elements not found. Creating fallback...');
-        const fallbackModal = document.createElement('div');
-        fallbackModal.id = 'detailModal';
-        fallbackModal.className = 'modal';
-        fallbackModal.innerHTML = `<span class="close" onclick="closeDetailModal()">×</span><div id="detailContent"></div><textarea id="notesInput" class="notes-input" placeholder="Add your notes here..."></textarea><button id="saveNotesBtn">Save Notes</button>`;
-        document.body.appendChild(fallbackModal);
-        document.getElementById('detailContent').innerHTML = content;
-        document.getElementById('notesInput').value = (data.notes && data.notes.admin) || '';
-        document.getElementById('saveNotesBtn').onclick = () => saveNotes(id, document.getElementById('notesInput').value);
-        fallbackModal.style.display = 'block';
-      }
-    } else {
-      alert('Document not found');
-    }
-  }).catch((error) => {
-    console.error('View details error:', error);
-    alert('Error viewing details: ' + error.message);
-  });
-}
-
-function closeDetailModal() {
-  const modal = document.getElementById('detailModal');
-  if (modal) {
-    modal.style.display = 'none';
-  }
-}
-
-function saveNotes(id, notes) {
-  const docRef = doc(db, 'applications', id);
-  setDoc(docRef, { notes: { admin: notes } }, { merge: true })
-    .then(() => {
-      console.log('Notes saved successfully');
-      alert('Notes saved!');
-      closeDetailModal();
-    })
-    .catch((error) => {
-      console.error('Error saving notes:', error);
-      alert('Error saving notes: ' + error.message);
-    });
-}
-
 function sortTable(n) {
   const table = document.getElementById('applicationsTable');
   if (table) {
     let switching = true;
     let dir = localStorage.getItem(`sortDir_${n}`) === 'desc' ? 'desc' : 'asc';
     let switchcount = 0;
-    const th = document.getElementById(`sort${['Name', 'Age', 'Total', 'Income', 'Job', 'Company', 'Date', 'Message'][n]}`);
+    const th = document.getElementById(`sort${['Name', 'Age', 'Total', 'Income', 'Job', 'Company', 'Date', 'Message', 'DOB', 'Address', 'Phone', 'Email', 'EmpLength', 'PetType', 'PetAge', 'PetWeight', 'PetBehavior', 'Comments'][n]}`);
     // Clear previous sort indicators
     document.querySelectorAll('th').forEach(t => {
       t.classList.remove('sorted-asc', 'sorted-desc');
@@ -389,6 +309,6 @@ function sortTable(n) {
       }
     }
   } else {
-    console.error('Table not found for sorting');
+    console.error('Table not removed for sorting');
   }
 }
