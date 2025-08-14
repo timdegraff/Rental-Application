@@ -12,6 +12,46 @@
     <script type="module" src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js"></script>
     <script type="module" src="script.js?v=20250813"></script>
+    <script>
+        let occupantCount = 1;
+
+        function addOccupant() {
+            if (occupantCount >= 6) {
+                alert("Maximum 6 occupants reached.");
+                return;
+            }
+            occupantCount++;
+            const div = document.createElement('div');
+            div.className = 'occupant-row';
+            div.innerHTML = `
+                <label>Name: <input type="text" name="occupantName[]" required autocomplete="name"></label>
+                <label>Relationship: 
+                    <select name="occupantRelation[]" required>
+                        <option value="">Select</option>
+                        <option value="Spouse">Spouse</option>
+                        <option value="Child">Child</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </label>
+                <label>Age: 
+                    <select name="occupantAge[]" required>
+                        <option value="">Select</option>
+                        <option value="0-12">0-12</option>
+                        <option value="13-17">13-17</option>
+                        <option value="18+">18+</option>
+                    </select>
+                </label>
+                <label>Gender: 
+                    <select name="occupantGender[]" required autocomplete="sex">
+                        <option value="">Select</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                    </select>
+                </label>
+            `;
+            document.getElementById('occupants').appendChild(div);
+        }
+    </script>
 </head>
 <body style="background-color: #E6F3E6;">
     <div id="content" style="display: none;">
@@ -65,9 +105,9 @@
             <h3>Occupants (Max 6, including yourself)</h3>
             <div id="occupants">
                 <div class="occupant-row">
-                    <label>Name: <input type="text" name="occupantName[]" required autocomplete="name"></label>
+                    <label>Name: <input type="text" name="occupantName[]" autocomplete="name"></label>
                     <label>Relationship: 
-                        <select name="occupantRelation[]" required>
+                        <select name="occupantRelation[]">
                             <option value="">Select</option>
                             <option value="Spouse">Spouse</option>
                             <option value="Child">Child</option>
@@ -75,7 +115,7 @@
                         </select>
                     </label>
                     <label>Age: 
-                        <select name="occupantAge[]" required>
+                        <select name="occupantAge[]">
                             <option value="">Select</option>
                             <option value="0-12">0-12</option>
                             <option value="13-17">13-17</option>
@@ -83,7 +123,7 @@
                         </select>
                     </label>
                     <label>Gender: 
-                        <select name="occupantGender[]" required autocomplete="sex">
+                        <select name="occupantGender[]" autocomplete="sex">
                             <option value="">Select</option>
                             <option value="Male">Male</option>
                             <option value="Female">Female</option>
@@ -108,17 +148,13 @@
                 <label>Phone: <input type="tel" name="refPhone[]" required autocomplete="tel"></label>
                 <label>Relationship: <input type="text" name="refRelation[]" required></label>
             </div>
-            <h3>Emergency Contact</h3>
-            <label>Name: <input type="text" name="emergencyName" required autocomplete="name"></label>
-            <label>Phone: <input type="tel" name="emergencyPhone" required autocomplete="tel"></label>
-            <label>Relationship: <input type="text" name="emergencyRelation" required></label>
             <h3>Personal Message</h3>
             <textarea name="personalMessage" placeholder="Why you're looking for a new place" required autocomplete="off"></textarea>
             <h3>Comments/Questions</h3>
             <textarea name="comments" autocomplete="off"></textarea>
             <h3>Upload ID (Driver's License)</h3>
             <input type="file" name="idUpload" accept="image/jpeg,image/png,image/jpg" capture="environment">
-            <button type="submit">Submit Application</button>
+            <button type="submit" id="submitBtn" disabled>Submit Application</button>
         </form>
         <div id="modal" class="modal">
             <span class="close" onclick="closeModal()">&times;</span>
