@@ -43,7 +43,47 @@ function closeModal() {
   }
 }
 
-// Move checkFormValidity outside the block
+function addOccupant() {
+  const occupantsDiv = document.getElementById('occupants');
+  let occupantCount = occupantsDiv.children.length + 1;
+  if (occupantCount >= 6) {
+    alert("Maximum 6 occupants reached.");
+    return;
+  }
+  const div = document.createElement('div');
+  div.className = 'occupant-row';
+  div.innerHTML = `
+    <label>Name: <input type="text" name="occupantName[]" required autocomplete="name"></label>
+    <label>Relationship: 
+      <select name="occupantRelation[]" required>
+        <option value="">Select</option>
+        <option value="Self">Self</option>
+        <option value="Spouse">Spouse</option>
+        <option value="Child">Child</option>
+        <option value="Parent">Parent</option>
+        <option value="Other">Other</option>
+      </select>
+    </label>
+    <label>Age: <input type="text" name="occupantAge[]" required></label>
+    <label>Gender: 
+      <select name="occupantGender[]" required autocomplete="sex">
+        <option value="">Select</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+      </select>
+    </label>
+    ${occupantCount > 1 ? '<button type="button" class="delete-occupant" onclick="deleteOccupant(this)">X</button>' : ''}
+  `;
+  occupantsDiv.appendChild(div);
+}
+
+function deleteOccupant(button) {
+  const occupantsDiv = document.getElementById('occupants');
+  if (occupantsDiv.children.length > 1) {
+    button.parentElement.remove();
+  }
+}
+
 function checkFormValidity(form) {
   const fullName = form.fullName.value.trim();
   const dob = form.dob.value;
@@ -77,7 +117,7 @@ if (document.getElementById('applicationForm')) {
       const form = document.getElementById('applicationForm');
       const submitBtn = document.getElementById('submitBtn');
       if (form && submitBtn) {
-        checkFormValidity(form); // Initial validation
+        submitBtn.disabled = !checkFormValidity(form); // Initial validation
       } else {
         console.error('Form or submit button not found');
       }
