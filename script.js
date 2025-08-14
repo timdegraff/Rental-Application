@@ -31,12 +31,16 @@ const images = [
 ];
 
 function openModal(index) {
-  document.getElementById('modal').style.display = 'block';
-  document.getElementById('modalImage').src = images[index];
+  if (document.getElementById('modal')) {
+    document.getElementById('modal').style.display = 'block';
+    document.getElementById('modalImage').src = images[index];
+  }
 }
 
 function closeModal() {
-  document.getElementById('modal').style.display = 'none';
+  if (document.getElementById('modal')) {
+    document.getElementById('modal').style.display = 'none';
+  }
 }
 
 if (document.getElementById('applicationForm')) {
@@ -49,85 +53,171 @@ if (document.getElementById('applicationForm')) {
       alert('Invalid passcode');
     }
   }).catch((error) => {
+    console.error('Authentication error:', error);
     alert('Authentication failed: ' + error.message);
   });
 
   const form = document.getElementById('applicationForm');
   const submitBtn = document.getElementById('submitBtn');
 
-  form.addEventListener('input', checkFormValidity);
+  if (form && submitBtn) {
+    form.addEventListener('input', checkFormValidity);
 
-  function checkFormValidity() {
-    const fullName = form.fullName.value.trim();
-    const dob = form.dob.value;
-    const currentAddress = form.currentAddress.value.trim();
-    const phone = form.phone.value.trim();
-    const email = form.email.value.trim();
-    const jobTitle = form.jobTitle.value.trim();
-    const employer = form.employer.value.trim();
-    const employmentLength = form.employmentLength.value.trim();
-    const income = form.income.value.trim();
-    const refNames = form.querySelectorAll('input[name="refName[]"]');
-    const refPhones = form.querySelectorAll('input[name="refPhone[]"]');
-    const refRelations = form.querySelectorAll('input[name="refRelation[]"]');
-    const personalMessage = form.personalMessage.value.trim();
+    function checkFormValidity() {
+      const fullName = form.fullName.value.trim();
+      const dob = form.dob.value;
+      const currentAddress = form.currentAddress.value.trim();
+      const phone = form.phone.value.trim();
+      const email = form.email.value.trim();
+      const jobTitle = form.jobTitle.value.trim();
+      const employer = form.employer.value.trim();
+      const employmentLength = form.employmentLength.value.trim();
+      const income = form.income.value.trim();
+      const refNames = form.querySelectorAll('input[name="refName[]"]');
+      const refPhones = form.querySelectorAll('input[name="refPhone[]"]');
+      const refRelations = form.querySelectorAll('input[name="refRelation[]"]');
+      const personalMessage = form.personalMessage.value.trim();
 
-    const allRefsValid = refNames.length === 2 && 
-                        Array.from(refNames).every(r => r.value.trim()) &&
-                        Array.from(refPhones).every(r => r.value.trim()) &&
-                        Array.from(refRelations).every(r => r.value.trim());
+      const allRefsValid = refNames.length === 2 && 
+                          Array.from(refNames).every(r => r.value.trim()) &&
+                          Array.from(refPhones).every(r => r.value.trim()) &&
+                          Array.from(refRelations).every(r => r.value.trim());
 
-    submitBtn.disabled = !(fullName && dob && currentAddress && phone && email && 
-                          jobTitle && employer && employmentLength && income && 
-                          allRefsValid && personalMessage);
+      submitBtn.disabled = !(fullName && dob && currentAddress && phone && email && 
+                            jobTitle && employer && employmentLength && income && 
+                            allRefsValid && personalMessage);
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (submitBtn.disabled) {
+        alert("Please fill all required fields.");
+        return;
+      }
+
+      const user = auth.currentUser;
+      if (!user) {
+        alert("Authentication required. Please refresh and try again.");
+        return;
+      }
+
+      try {
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData);
+        data.occupants = [];
+        const names = formData.getAll('occupantName[]');
+        const ages = formData.getAll('occupantAge[]');
+        const genders = formData.getAll('occupantGender[]');
+        const relations = formData.getAll('occupantRelation[]');
+        for (let i = 0; i < names.length; i++) {
+          if (names[i]) data.occupants.push({ name: names[i], age: ages[i], gender: genders[i], relation: relations[i] });
+        }
+        data.references = [];
+        const refNames = formData.getAll('refName[]');
+        const refPhones = formData.getAll('refPhone[]');
+        const refRelations = formData.getAll('refRelation[]');
+        for (let i = 0; i < refNames.length; i++) {
+          data.references.push({ name: refNames[i], phone: refPhones[i], relation: refRelations[i] });
+        }
+        data.submitted = new Date();
+
+        await addDoc(collection(db, 'applications'), data);
+        // Clear page and show thank-you message
+        document.getElementById('content').innerHTML = `
+          <header>
+              <h1>Higgins Woodland Retreat - Rental Application</h1>
+          </header>
+          <p style="text-align: center;">Thank you for your application. We will be in touch soon!</p>
+        `;
+      } catch (error) {
+        console.error('Submission error:', error);
+        alert("Error submitting application: " + error.message);
+      }
+    });
+  } else {
+    console.error('Form or submit button not found in DOM');
   }
-
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    if (submitBtn.disabled) {
-      alert("Please fill all required fields.");
-      return;
-    }
-
-    const user = auth.currentUser;
-    if (!user) {
-      alert("Authentication required. Please refresh and try again.");
-      return;
-    }
-
-    try {
-      const formData = new FormData(form);
-      const data = Object.fromEntries(formData);
-      data.occupants = [];
-      const names = formData.getAll('occupantName[]');
-      const ages = formData.getAll('occupantAge[]');
-      const genders = formData.getAll('occupantGender[]');
-      const relations = formData.getAll('occupantRelation[]');
-      for (let i = 0; i < names.length; i++) {
-        if (names[i]) data.occupants.push({ name: names[i], age: ages[i], gender: genders[i], relation: relations[i] });
-      }
-      data.references = [];
-      const refNames = formData.getAll('refName[]');
-      const refPhones = formData.getAll('refPhone[]');
-      const refRelations = formData.getAll('refRelation[]');
-      for (let i = 0; i < refNames.length; i++) {
-        data.references.push({ name: refNames[i], phone: refPhones[i], relation: refRelations[i] });
-      }
-      data.submitted = new Date();
-
-      await addDoc(collection(db, 'applications'), data);
-      // Clear page and show thank-you message
-      document.getElementById('content').innerHTML = `
-        <header>
-            <h1>Higgins Woodland Retreat - Rental Application</h1>
-        </header>
-        <p style="text-align: center;">Thank you for your application. We will be in touch soon!</p>
-      `;
-    } catch (error) {
-      alert("Error submitting application: " + error.message);
-    }
-  });
 }
 
 if (document.getElementById('applicationsTable')) {
-  signInAnonymously(auth).then
+  signInAnonymously(auth).then(() => {
+    const passcode = prompt('Enter admin passcode:');
+    if (passcode === 'Porky9') {
+      document.getElementById('adminContent').style.display = 'block';
+      onSnapshot(collection(db, 'applications'), (snapshot) => {
+        const tbody = document.querySelector('#applicationsTable tbody');
+        if (tbody) {
+          tbody.innerHTML = '';
+          snapshot.forEach((doc) => {
+            const data = doc.data();
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td>${data.fullName || 'N/A'}</td>
+              <td>${data.income || 'N/A'}</td>
+              <td>${data.submitted ? data.submitted.toLocaleString() : 'N/A'}</td>
+              <td><button onclick="viewDetails('${doc.id}')">View</button></td>
+            `;
+            tbody.appendChild(row);
+          });
+        } else {
+          console.error('Table body not found');
+        }
+      });
+    } else {
+      alert('Invalid passcode');
+    }
+  }).catch((error) => {
+    console.error('Admin authentication error:', error);
+    alert('Authentication failed: ' + error.message);
+  });
+}
+
+function viewDetails(id) {
+  const docRef = doc(db, 'applications', id);
+  getDoc(docRef).then((docSnap) => {
+    if (docSnap.exists()) {
+      alert(JSON.stringify(docSnap.data(), null, 2));
+    } else {
+      alert('Document not found');
+    }
+  }).catch((error) => {
+    console.error('View details error:', error);
+    alert('Error viewing details: ' + error.message);
+  });
+}
+
+function sortTable(n) {
+  const table = document.getElementById('applicationsTable');
+  if (table) {
+    let switching = true, dir = 'asc', switchcount = 0;
+    while (switching) {
+      switching = false;
+      const rows = table.rows;
+      for (let i = 1; i < (rows.length - 1); i++) {
+        let shouldSwitch = false;
+        const x = rows[i].getElementsByTagName('TD')[n];
+        const y = rows[i + 1].getElementsByTagName('TD')[n];
+        if (dir == 'asc') {
+          if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+            shouldSwitch = true; break;
+          }
+        } else if (dir == 'desc') {
+          if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+            shouldSwitch = true; break;
+          }
+        }
+      }
+      if (shouldSwitch) {
+        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+        switching = true;
+        switchcount++;
+      } else {
+        if (switchcount == 0 && dir == 'asc') {
+          dir = 'desc'; switching = true;
+        }
+      }
+    }
+  } else {
+    console.error('Table not found for sorting');
+  }
+}
