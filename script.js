@@ -31,20 +31,25 @@ const images = [
 ];
 
 function openModal(index) {
-  if (document.getElementById('modal')) {
-    document.getElementById('modal').style.display = 'block';
-    document.getElementById('modalImage').src = images[index];
+  const modal = document.getElementById('modal');
+  const modalImage = document.getElementById('modalImage');
+  if (modal && modalImage) {
+    modal.style.display = 'block';
+    modalImage.src = images[index] || '';
+  } else {
+    console.error('Modal or modal image not found');
   }
 }
 
 function closeModal() {
-  if (document.getElementById('modal')) {
-    document.getElementById('modal').style.display = 'none';
+  const modal = document.getElementById('modal');
+  if (modal) {
+    modal.style.display = 'none';
   }
 }
 
 function addOccupant() {
-  console.log('Adding occupant...'); // Debug log
+  console.log('Adding occupant...');
   const occupantsDiv = document.getElementById('occupants');
   if (!occupantsDiv) {
     console.error('Occupants div not found');
@@ -125,7 +130,7 @@ if (document.getElementById('applicationForm')) {
       const submitBtn = document.getElementById('submitBtn');
       const addOccupantBtn = document.getElementById('addOccupantBtn');
       if (form && submitBtn && addOccupantBtn) {
-        submitBtn.disabled = !checkFormValidity(form); // Initial validation
+        submitBtn.disabled = !checkFormValidity(form);
         addOccupantBtn.addEventListener('click', addOccupant);
       } else {
         console.error('Form, submit button, or add occupant button not found');
@@ -181,7 +186,6 @@ if (document.getElementById('applicationForm')) {
         data.submitted = new Date();
 
         await addDoc(collection(db, 'applications'), data);
-        // Clear page and show thank-you message
         document.getElementById('content').innerHTML = `
           <header>
               <h1>Higgins Woodland Retreat - Rental Application</h1>
@@ -213,6 +217,7 @@ if (document.getElementById('applicationsTable')) {
             const data = doc.data();
             const occupants = data.occupants || [];
             const estTime = data.submitted ? new Date(data.submitted).toLocaleString('en-US', { timeZone: 'America/New_York' }) : 'N/A';
+            const messagePreview = (data.personalMessage || '').substring(0, 60) + (data.personalMessage && data.personalMessage.length > 60 ? '...' : '');
             const row = document.createElement('tr');
             row.innerHTML = `
               <td>${data.fullName || 'N/A'}</td>
@@ -222,6 +227,7 @@ if (document.getElementById('applicationsTable')) {
               <td>${data.jobTitle || 'N/A'}</td>
               <td>${data.employer || 'N/A'}</td>
               <td>${estTime}</td>
+              <td>${messagePreview}</td>
               <td><button onclick="viewDetails('${doc.id}')">View</button></td>
             `;
             tbody.appendChild(row);
@@ -283,7 +289,14 @@ function viewDetails(id) {
         contentDiv.innerHTML = content;
         modal.style.display = 'block';
       } else {
-        console.error('Detail modal or content div not found');
+        console.error('Detail modal or content div not found. Creating fallback...');
+        const fallbackModal = document.createElement('div');
+        fallbackModal.id = 'detailModal';
+        fallbackModal.className = 'modal';
+        fallbackModal.innerHTML = `<span class="close" onclick="closeDetailModal()">×</span><div id="detailContent"></div>`;
+        document.body.appendChild(fallbackModal);
+        document.getElementById('detailContent').innerHTML = content;
+        fallbackModal.style.display = 'block';
       }
     } else {
       alert('Document not found');
@@ -307,12 +320,16 @@ function sortTable(n) {
     let switching = true;
     let dir = localStorage.getItem(`sortDir_${n}`) === 'desc' ? 'desc' : 'asc';
     let switchcount = 0;
-    const th = document.getElementById(`sort${['Name', 'Age', 'Total', 'Income', 'Job', 'Company', 'Time'][n]}`);
+    const th = document.getElementById(`sort${['Name', 'Age', 'Total', 'Income', 'Job', 'Company', 'Time', 'Message'][n]}`);
     // Clear previous sort indicators
     document.querySelectorAll('th').forEach(t => {
       t.classList.remove('sorted-asc', 'sorted-desc');
     });
-    th.classList.add(`sorted-${dir}`);
+    if (th) {
+      th.classList.add(`sorted-${dir}`);
+    } else {
+      console.warn('Sort header not found for column:', n);
+    }
 
     while (switching) {
       switching = false;
