@@ -32,45 +32,6 @@ const images = [
   'images/IMG_7416.JPG', 'images/IMG_7418.JPG'
 ];
 
-let occupantCount = 1;
-
-function addOccupant() {
-  if (occupantCount >= 6) {
-    alert("Maximum 6 occupants reached.");
-    return;
-  }
-  occupantCount++;
-  const div = document.createElement('div');
-  div.className = 'occupant-row';
-  div.innerHTML = `
-    <label>Name: <input type="text" name="occupantName[]" required autocomplete="name"></label>
-    <label>Relationship: 
-      <select name="occupantRelation[]" required>
-        <option value="">Select</option>
-        <option value="Spouse">Spouse</option>
-        <option value="Child">Child</option>
-        <option value="Other">Other</option>
-      </select>
-    </label>
-    <label>Age: 
-      <select name="occupantAge[]" required>
-        <option value="">Select</option>
-        <option value="0-12">0-12</option>
-        <option value="13-17">13-17</option>
-        <option value="18+">18+</option>
-      </select>
-    </label>
-    <label>Gender: 
-      <select name="occupantGender[]" required autocomplete="sex">
-        <option value="">Select</option>
-        <option value="Male">Male</option>
-        <option value="Female">Female</option>
-      </select>
-    </label>
-  `;
-  document.getElementById('occupants').appendChild(div);
-}
-
 function openModal(index) {
   document.getElementById('modal').style.display = 'block';
   document.getElementById('modalImage').src = images[index];
@@ -85,6 +46,7 @@ if (document.getElementById('applicationForm')) {
     const passcode = prompt('Enter passcode:');
     if (passcode === 'Daisy44') {
       document.getElementById('content').style.display = 'block';
+      checkFormValidity(); // Initial validation
     } else {
       alert('Invalid passcode');
     }
@@ -92,9 +54,43 @@ if (document.getElementById('applicationForm')) {
     alert('Authentication failed: ' + error.message);
   });
 
-  document.getElementById('applicationForm').addEventListener('submit', async (e) => {
+  const form = document.getElementById('applicationForm');
+  const submitBtn = document.getElementById('submitBtn');
+
+  form.addEventListener('input', checkFormValidity);
+
+  function checkFormValidity() {
+    const fullName = form.fullName.value.trim();
+    const dob = form.dob.value;
+    const currentAddress = form.currentAddress.value.trim();
+    const phone = form.phone.value.trim();
+    const email = form.email.value.trim();
+    const jobTitle = form.jobTitle.value.trim();
+    const employer = form.employer.value.trim();
+    const employmentLength = form.employmentLength.value.trim();
+    const income = form.income.value.trim();
+    const refNames = form.querySelectorAll('input[name="refName[]"]');
+    const refPhones = form.querySelectorAll('input[name="refPhone[]"]');
+    const refRelations = form.querySelectorAll('input[name="refRelation[]"]');
+    const personalMessage = form.personalMessage.value.trim();
+
+    const allRefsValid = refNames.length === 2 && 
+                        Array.from(refNames).every(r => r.value.trim()) &&
+                        Array.from(refPhones).every(r => r.value.trim()) &&
+                        Array.from(refRelations).every(r => r.value.trim());
+
+    submitBtn.disabled = !(fullName && dob && currentAddress && phone && email && 
+                          jobTitle && employer && employmentLength && income && 
+                          allRefsValid && personalMessage);
+  }
+
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const formData = new FormData(e.target);
+    if (submitBtn.disabled) {
+      alert("Please fill all required fields.");
+      return;
+    }
+    const formData = new FormData(form);
     const data = Object.fromEntries(formData);
     data.occupants = [];
     const names = formData.getAll('occupantName[]');
@@ -102,7 +98,7 @@ if (document.getElementById('applicationForm')) {
     const genders = formData.getAll('occupantGender[]');
     const relations = formData.getAll('occupantRelation[]');
     for (let i = 0; i < names.length; i++) {
-      data.occupants.push({ name: names[i], age: ages[i], gender: genders[i], relation: relations[i] });
+      if (names[i]) data.occupants.push({ name: names[i], age: ages[i], gender: genders[i], relation: relations[i] });
     }
     data.references = [];
     const refNames = formData.getAll('refName[]');
@@ -124,7 +120,8 @@ if (document.getElementById('applicationForm')) {
 
     await addDoc(collection(db, 'applications'), data);
     alert('Application submitted!');
-    e.target.reset();
+    form.reset();
+    checkFormValidity(); // Reset button state
   });
 }
 
