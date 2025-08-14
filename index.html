@@ -11,49 +11,6 @@
     <script type="module" src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
     <script type="module" src="script.js?v=20250813"></script>
-    <script>
-        let occupantCount = 1;
-
-        function addOccupant() {
-            if (occupantCount >= 6) {
-                alert("Maximum 6 occupants reached.");
-                return;
-            }
-            occupantCount++;
-            const div = document.createElement('div');
-            div.className = 'occupant-row';
-            div.innerHTML = `
-                <label>Name: <input type="text" name="occupantName[]" required autocomplete="name"></label>
-                <label>Relationship: 
-                    <select name="occupantRelation[]" required>
-                        <option value="">Select</option>
-                        <option value="Self">Self</option>
-                        <option value="Spouse">Spouse</option>
-                        <option value="Child">Child</option>
-                        <option value="Parent">Parent</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </label>
-                <label>Age: <input type="text" name="occupantAge[]" required></label>
-                <label>Gender: 
-                    <select name="occupantGender[]" required autocomplete="sex">
-                        <option value="">Select</option>
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                    </select>
-                </label>
-                ${occupantCount > 1 ? '<button type="button" class="delete-occupant" onclick="deleteOccupant(this)">X</button>' : ''}
-            `;
-            document.getElementById('occupants').appendChild(div);
-        }
-
-        function deleteOccupant(button) {
-            if (occupantCount > 1) {
-                button.parentElement.remove();
-                occupantCount--;
-            }
-        }
-    </script>
 </head>
 <body style="background-color: #E6F3E6;">
     <div id="content" style="display: none;">
@@ -128,7 +85,7 @@
                     </label>
                 </div>
             </div>
-            <button type="button" id="addOccupantBtn" onclick="addOccupant()">+ Add Occupant</button>
+            <button type="button" id="addOccupantBtn">+ Add Occupant</button>
             <h3>Pet Details (if requesting exception)</h3>
             <label>Type/Breed: <input type="text" name="petType" autocomplete="off"></label>
             <label>Age: <input type="number" name="petAge" autocomplete="off"></label>
@@ -152,7 +109,7 @@
             <button type="submit" id="submitBtn" disabled>Submit Application</button>
         </form>
         <div id="modal" class="modal">
-            <span class="close" onclick="closeModal()">&times;</span>
+            <span class="close" onclick="closeModal()">×</span>
             <img class="modal-content" id="modalImage">
         </div>
     </div>
