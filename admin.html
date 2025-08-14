@@ -18,17 +18,25 @@
         <table id="applicationsTable">
             <thead>
                 <tr>
-                    <th onclick="sortTable(0)">Full Name</th>
-                    <th onclick="sortTable(1)">Income</th>
-                    <th onclick="sortTable(2)">Submitted</th>
-                    <th>Action</th>
+                    <th onclick="sortTable(0)">Name</th>
+                    <th onclick="sortTable(1)">Age</th>
+                    <th onclick="sortTable(2)">Total Occupants</th>
+                    <th onclick="sortTable(3)">Income</th>
+                    <th onclick="sortTable(4)">Job Title</th>
+                    <th onclick="sortTable(5)">Company Name</th>
+                    <th onclick="sortTable(6)">Timestamp (EST)</th>
+                    <th>Application</th>
                 </tr>
             </thead>
             <tbody></tbody>
         </table>
     </div>
+    <div id="detailModal" class="modal">
+        <span class="close" onclick="closeDetailModal()">×</span>
+        <div class="modal-content" id="detailContent"></div>
+    </div>
     <div id="modal" class="modal">
-        <span class="close" onclick="closeModal()">&times;</span>
+        <span class="close" onclick="closeModal()">×</span>
         <img class="modal-content" id="modalImage">
     </div>
 </body>
