@@ -1,4 +1,10 @@
-// Replace with your config
+// Import Firebase modules
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getFirestore, collection, addDoc, onSnapshot, getDoc, doc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+
+// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyBDNZBX_O-IJnwne7JXI_pZOKZBoO-B_BM",
   authDomain: "rental-application-3d10f.firebaseapp.com",
@@ -8,12 +14,18 @@ const firebaseConfig = {
   appId: "1:433190078343:web:d608f2b931ea70d0dd3522",
   measurementId: "G-2R36VNZ4ZT"
 };
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const storage = firebase.storage();
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const storage = getStorage(app);
+const auth = getAuth(app);
 
 const images = [
-  'images/photo1.jpg', 'images/photo2.jpg', 'images/photo3.jpg', 'images/photo4.jpg',
+  'images/photo1.jpg', // IMG_4997.JPG - Best Overall View
+  'images/photo2.jpg', // IMG_5529.JPG - Interior Highlight
+  'images/photo3.jpg', // IMG_4180.jpg - Exterior View
+  'images/photo4.jpg'  // IMG_6391.JPG - Additional Room/Feature
   // Add other 14 if using Git LFS or Firebase URLs later
 ];
 
@@ -43,7 +55,7 @@ function closeModal() {
 }
 
 if (document.getElementById('applicationForm')) {
-  firebase.auth().signInAnonymously().then(() => {
+  signInAnonymously(auth).then(() => {
     const passcode = prompt('Enter passcode:');
     if (passcode === 'Daisy44') {
       document.getElementById('content').style.display = 'block';
@@ -74,38 +86,38 @@ if (document.getElementById('applicationForm')) {
     for (let i = 0; i < refNames.length; i++) {
       data.references.push({ name: refNames[i], phone: refPhones[i], relation: refRelations[i] });
     }
-    data.submitted = firebase.firestore.Timestamp.now();
+    data.submitted = new Date();
 
     let idUrl = '';
     const file = formData.get('idUpload');
     if (file && file.size <= 5000000 && file.size <= 20000000) {
-      const ref = storage.ref().child(`ids/${Date.now()}_${file.name}`);
-      await ref.put(file);
-      idUrl = await ref.getDownloadURL();
+      const storageRef = ref(storage, `ids/${Date.now()}_${file.name}`);
+      await uploadBytes(storageRef, file);
+      idUrl = await getDownloadURL(storageRef);
     }
     data.idUrl = idUrl;
 
-    await db.collection('applications').add(data);
+    await addDoc(collection(db, 'applications'), data);
     alert('Application submitted!');
     e.target.reset();
   });
 }
 
 if (document.getElementById('applicationsTable')) {
-  firebase.auth().signInAnonymously().then(() => {
+  signInAnonymously(auth).then(() => {
     const passcode = prompt('Enter admin passcode:');
     if (passcode === 'Porky9') {
       document.getElementById('adminContent').style.display = 'block';
-      db.collection('applications').onSnapshot(snapshot => {
+      onSnapshot(collection(db, 'applications'), (snapshot) => {
         const tbody = document.querySelector('#applicationsTable tbody');
         tbody.innerHTML = '';
-        snapshot.forEach(doc => {
+        snapshot.forEach((doc) => {
           const data = doc.data();
           const row = document.createElement('tr');
           row.innerHTML = `
             <td>${data.fullName}</td>
             <td>${data.income}</td>
-            <td>${data.submitted.toDate().toLocaleString()}</td>
+            <td>${data.submitted.toLocaleString()}</td>
             <td><button onclick="viewDetails('${doc.id}')">View</button></td>
           `;
           tbody.appendChild(row);
@@ -120,9 +132,10 @@ if (document.getElementById('applicationsTable')) {
 }
 
 function viewDetails(id) {
-  db.collection('applications').doc(id).get().then(doc => {
-    if (doc.exists) {
-      alert(JSON.stringify(doc.data(), null, 2));
+  const docRef = doc(db, 'applications', id);
+  getDoc(docRef).then((docSnap) => {
+    if (docSnap.exists()) {
+      alert(JSON.stringify(docSnap.data(), null, 2));
     }
   });
 }
