@@ -121,6 +121,31 @@ function checkFormValidity(form) {
          allRefsValid && personalMessage;
 }
 
+function exportToExcel() {
+  const table = document.getElementById('applicationsTable');
+  if (!table) {
+    console.error('Table not found for export');
+    alert('Unable to export: Table not found.');
+    return;
+  }
+  let csv = [];
+  const headers = Array.from(table.querySelectorAll('th')).map(th => `"${th.textContent.replace(/"/g, '""')}"`);
+  csv.push(headers.join(','));
+  const rows = table.querySelectorAll('tbody tr');
+  rows.forEach(row => {
+    const cols = Array.from(row.querySelectorAll('td')).map(td => `"${td.textContent.replace(/"/g, '""')}"`);
+    csv.push(cols.join(','));
+  });
+  const csvContent = 'data:text/csv;charset=utf-8,' + csv.join('\n');
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement('a');
+  link.setAttribute('href', encodedUri);
+  link.setAttribute('download', 'rental_applications.csv');
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
 if (document.getElementById('applicationForm')) {
   signInAnonymously(auth).then(() => {
     const passcode = prompt('Enter passcode:');
@@ -184,7 +209,7 @@ if (document.getElementById('applicationForm')) {
           data.references.push({ name: refNames[i], phone: refPhones[i], relation: refRelations[i] });
         }
         if (data.submitted instanceof Timestamp) {
-          data.submitted = data.submitted.toDate(); // Convert Firestore Timestamp to JS Date
+          data.submitted = data.submitted.toDate();
         } else {
           data.submitted = new Date();
         }
@@ -242,6 +267,36 @@ if (document.getElementById('applicationsTable')) {
               <td>${data.petWeight || 'N/A'}</td>
               <td>${data.petBehavior || 'N/A'}</td>
               <td>${data.comments || 'N/A'}</td>
+              <td>${occupants[0] ? occupants[0].name || 'N/A' : 'N/A'}</td>
+              <td>${occupants[0] ? occupants[0].relation || 'N/A' : 'N/A'}</td>
+              <td>${occupants[0] ? occupants[0].age || 'N/A' : 'N/A'}</td>
+              <td>${occupants[0] ? occupants[0].gender || 'N/A' : 'N/A'}</td>
+              <td>${occupants[1] ? occupants[1].name || 'N/A' : 'N/A'}</td>
+              <td>${occupants[1] ? occupants[1].relation || 'N/A' : 'N/A'}</td>
+              <td>${occupants[1] ? occupants[1].age || 'N/A' : 'N/A'}</td>
+              <td>${occupants[1] ? occupants[1].gender || 'N/A' : 'N/A'}</td>
+              <td>${occupants[2] ? occupants[2].name || 'N/A' : 'N/A'}</td>
+              <td>${occupants[2] ? occupants[2].relation || 'N/A' : 'N/A'}</td>
+              <td>${occupants[2] ? occupants[2].age || 'N/A' : 'N/A'}</td>
+              <td>${occupants[2] ? occupants[2].gender || 'N/A' : 'N/A'}</td>
+              <td>${occupants[3] ? occupants[3].name || 'N/A' : 'N/A'}</td>
+              <td>${occupants[3] ? occupants[3].relation || 'N/A' : 'N/A'}</td>
+              <td>${occupants[3] ? occupants[3].age || 'N/A' : 'N/A'}</td>
+              <td>${occupants[3] ? occupants[3].gender || 'N/A' : 'N/A'}</td>
+              <td>${occupants[4] ? occupants[4].name || 'N/A' : 'N/A'}</td>
+              <td>${occupants[4] ? occupants[4].relation || 'N/A' : 'N/A'}</td>
+              <td>${occupants[4] ? occupants[4].age || 'N/A' : 'N/A'}</td>
+              <td>${occupants[4] ? occupants[4].gender || 'N/A' : 'N/A'}</td>
+              <td>${occupants[5] ? occupants[5].name || 'N/A' : 'N/A'}</td>
+              <td>${occupants[5] ? occupants[5].relation || 'N/A' : 'N/A'}</td>
+              <td>${occupants[5] ? occupants[5].age || 'N/A' : 'N/A'}</td>
+              <td>${occupants[5] ? occupants[5].gender || 'N/A' : 'N/A'}</td>
+              <td>${data.references[0] ? data.references[0].name || 'N/A' : 'N/A'}</td>
+              <td>${data.references[0] ? data.references[0].phone || 'N/A' : 'N/A'}</td>
+              <td>${data.references[0] ? data.references[0].relation || 'N/A' : 'N/A'}</td>
+              <td>${data.references[1] ? data.references[1].name || 'N/A' : 'N/A'}</td>
+              <td>${data.references[1] ? data.references[1].phone || 'N/A' : 'N/A'}</td>
+              <td>${data.references[1] ? data.references[1].relation || 'N/A' : 'N/A'}</td>
             `;
             tbody.appendChild(row);
           });
@@ -266,7 +321,7 @@ function sortTable(n) {
     let switching = true;
     let dir = localStorage.getItem(`sortDir_${n}`) === 'desc' ? 'desc' : 'asc';
     let switchcount = 0;
-    const th = document.getElementById(`sort${['Name', 'Age', 'Total', 'Income', 'Job', 'Company', 'Date', 'Message', 'DOB', 'Address', 'Phone', 'Email', 'EmpLength', 'PetType', 'PetAge', 'PetWeight', 'PetBehavior', 'Comments'][n]}`);
+    const th = document.getElementById(`sort${['Name', 'Age', 'Total', 'Income', 'Job', 'Company', 'Date', 'Message', 'DOB', 'Address', 'Phone', 'Email', 'EmpLength', 'PetType', 'PetAge', 'PetWeight', 'PetBehavior', 'Comments', 'Occ1Name', 'Occ1Rel', 'Occ1Age', 'Occ1Gen', 'Occ2Name', 'Occ2Rel', 'Occ2Age', 'Occ2Gen', 'Occ3Name', 'Occ3Rel', 'Occ3Age', 'Occ3Gen', 'Occ4Name', 'Occ4Rel', 'Occ4Age', 'Occ4Gen', 'Occ5Name', 'Occ5Rel', 'Occ5Age', 'Occ5Gen', 'Occ6Name', 'Occ6Rel', 'Occ6Age', 'Occ6Gen', 'Ref1Name', 'Ref1Phone', 'Ref1Rel', 'Ref2Name', 'Ref2Phone', 'Ref2Rel'][n]}`);
     // Clear previous sort indicators
     document.querySelectorAll('th').forEach(t => {
       t.classList.remove('sorted-asc', 'sorted-desc');
@@ -284,15 +339,17 @@ function sortTable(n) {
         let shouldSwitch = false;
         const x = rows[i].getElementsByTagName('TD')[n];
         const y = rows[i + 1].getElementsByTagName('TD')[n];
-        if (dir === 'asc') {
-          if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
-            shouldSwitch = true;
-            break;
-          }
-        } else if (dir === 'desc') {
-          if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
-            shouldSwitch = true;
-            break;
+        if (x && y) {
+          if (dir === 'asc') {
+            if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+              shouldSwitch = true;
+              break;
+            }
+          } else if (dir === 'desc') {
+            if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+              shouldSwitch = true;
+              break;
+            }
           }
         }
       }
@@ -309,6 +366,6 @@ function sortTable(n) {
       }
     }
   } else {
-    console.error('Table not removed for sorting');
+    console.error('Table not found for sorting');
   }
 }
