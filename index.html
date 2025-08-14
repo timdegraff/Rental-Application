@@ -10,24 +10,43 @@
     <script type="module" src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js"></script>
     <script type="module" src="script.js"></script>
 </head>
-<body>
+<body style="background-color: #E6F3E6;">
     <div id="content" style="display: none;">
         <header>
             <h1>Higgins Woodland Retreat - Rental Application</h1>
-            <p>Fully furnished 1450 sqft 3 bed 2 full bath. On 2.5 acres of heavy woods. Very private! 1 mile from downtown Roscommon. 3 miles from Higgins Lake. Has laundry and storage shed.</p>
-            <p>Monthly Rent: $1500 | Security Deposit: $3000 (first + last month's rent) | Lease: Sept 2025 - May 2026 (extendable, not guaranteed)</p>
-            <p>Utilities: Tenant pays propane/electric; Landlord covers water (well), septic, garbage, propane tank fee.</p>
-            <p>Pets: Generally not allowed; exceptions considered with details + extra $1500 deposit.</p>
-            <p>Smoking: Prohibited. Max Residents: 6 | Max Visiting Guests: 4 | Background/Credit Check: $47 if advancing (free application).</p>
-            <p>Rules: Tenant responsible for lawn mowing/snow plowing ($25/mow or plow if landlord provides). Plenty of parking. No subletting without consent.</p>
-            <p>Availability: Sept 2025. <a href="https://www.airbnb.com/rooms/1264456225307362567" target="_blank">View on Airbnb</a></p>
-            <div class="thumbnail-grid">
-                <img src="images/photo1.jpg" alt="Best Overall View" onclick="openModal(0)">
-                <img src="images/photo2.jpg" alt="Interior Highlight" onclick="openModal(1)">
-                <img src="images/photo3.jpg" alt="Exterior View" onclick="openModal(2)">
-                <img src="images/photo4.jpg" alt="Additional Room/Feature" onclick="openModal(3)">
-            </div>
+            <p>Availability: Sept 2025. <a href="https://www.airbnb.com/h/higgins-woodland-retreat" target="_blank">View on Airbnb</a></p>
         </header>
+        <p>Fully furnished 1450 sqft 3 bed 2 full bath. On 2.5 acres of heavy woods. Very private! 1 mile from downtown Roscommon. 3 miles from Higgins Lake. Has laundry and storage shed.</p>
+        <p>Monthly Rent: $1500</p>
+        <p>Security Deposit: First + Last month's rent ($3000)</p>
+        <p>Lease: Sept 2025 - May 2026 (possibly extendable, not guaranteed)</p>
+        <p>Utilities: Tenant pays propane/electric; Landlord covers water (well), septic, garbage, propane tank fee.</p>
+        <p>Pets: Generally not allowed; exceptions may be considered with details + extra month's security deposit (refundable if no damage occurs)</p>
+        <p>Smoking: Prohibited</p>
+        <p>Max Residents: 6 | Max Visiting Guests: 4 |</p>
+        <p>Application Fee: Free</p>
+        <p>Background/Credit Check: $47 if advancing</p>
+        <p>Rules: Tenant responsible for lawn mowing/snow plowing ($25/mow or plow if landlord provides). Plenty of parking. No subletting without consent.</p>
+        <div class="photo-grid">
+            <img src="images/photo1.jpg" alt="Best Overall View" onclick="openModal(0)">
+            <img src="images/photo2.jpg" alt="Interior Highlight" onclick="openModal(1)">
+            <img src="images/photo3.jpg" alt="Exterior View" onclick="openModal(2)">
+            <img src="images/photo4.jpg" alt="Additional Room/Feature" onclick="openModal(3)">
+            <img src="images/IMG_4999.JPG" alt="Additional Photo" onclick="openModal(4)">
+            <img src="images/IMG_5760.JPG" alt="Additional Photo" onclick="openModal(5)">
+            <img src="images/IMG_6388.JPG" alt="Additional Photo" onclick="openModal(6)">
+            <img src="images/IMG_6389.JPG" alt="Additional Photo" onclick="openModal(7)">
+            <img src="images/IMG_6390.JPG" alt="Additional Photo" onclick="openModal(8)">
+            <img src="images/IMG_6392.JPG" alt="Additional Photo" onclick="openModal(9)">
+            <img src="images/IMG_6394.JPG" alt="Additional Photo" onclick="openModal(10)">
+            <img src="images/IMG_6395.JPG" alt="Additional Photo" onclick="openModal(11)">
+            <img src="images/IMG_6400.JPG" alt="Additional Photo" onclick="openModal(12)">
+            <img src="images/IMG_6401.JPG" alt="Additional Photo" onclick="openModal(13)">
+            <img src="images/IMG_6404.JPG" alt="Additional Photo" onclick="openModal(14)">
+            <img src="images/IMG_6405.JPG" alt="Additional Photo" onclick="openModal(15)">
+            <img src="images/IMG_7416.JPG" alt="Additional Photo" onclick="openModal(16)">
+            <img src="images/IMG_7418.JPG" alt="Additional Photo" onclick="openModal(17)">
+        </div>
         <form id="applicationForm">
             <h2>Applicant Information</h2>
             <label>Full Name: <input type="text" name="fullName" required autocomplete="name"></label>
@@ -50,7 +69,7 @@
                     <label>Occupation (if adult): <input type="text" name="occupantOccupation[]" autocomplete="organization-title"></label>
                 </div>
             </div>
-            <button type="button" onclick="addOccupant()">+ Add Occupant</button>
+            <button type="button" id="addOccupantBtn" onclick="addOccupant()">+ Add Occupant</button>
             <h3>Pet Details (if requesting exception)</h3>
             <label>Type/Breed: <input type="text" name="petType" autocomplete="off"></label>
             <label>Age: <input type="number" name="petAge" autocomplete="off"></label>
@@ -75,7 +94,7 @@
             <textarea name="personalMessage" placeholder="Why you're looking for a new place" required autocomplete="off"></textarea>
             <h3>Comments/Questions</h3>
             <textarea name="comments" autocomplete="off"></textarea>
-            <h3>Upload ID (Driver's License, max 5MB, JPG/PNG/JPEG)</h3>
+            <h3>Upload ID (Driver's License)</h3>
             <input type="file" name="idUpload" accept="image/jpeg,image/png,image/jpg" capture="environment">
             <button type="submit">Submit Application</button>
         </form>
