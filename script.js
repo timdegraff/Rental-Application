@@ -25,22 +25,48 @@ const images = [
   'images/photo1.jpg', // IMG_4997.JPG - Best Overall View
   'images/photo2.jpg', // IMG_5529.JPG - Interior Highlight
   'images/photo3.jpg', // IMG_4180.jpg - Exterior View
-  'images/photo4.jpg'  // IMG_6391.JPG - Additional Room/Feature
-  // Add other 14 if using Git LFS or Firebase URLs later
+  'images/photo4.jpg',  // IMG_6391.JPG - Additional Room/Feature
+  'images/IMG_4999.JPG', 'images/IMG_5760.JPG', 'images/IMG_6388.JPG', 'images/IMG_6389.JPG',
+  'images/IMG_6390.JPG', 'images/IMG_6392.JPG', 'images/IMG_6394.JPG', 'images/IMG_6395.JPG',
+  'images/IMG_6400.JPG', 'images/IMG_6401.JPG', 'images/IMG_6404.JPG', 'images/IMG_6405.JPG',
+  'images/IMG_7416.JPG', 'images/IMG_7418.JPG'
 ];
 
 let occupantCount = 1;
+
 function addOccupant() {
-  if (occupantCount >= 6) return;
+  if (occupantCount >= 6) {
+    alert("Maximum 6 occupants reached.");
+    return;
+  }
   occupantCount++;
   const div = document.createElement('div');
-  div.className = 'occupant';
+  div.className = 'occupant-row';
   div.innerHTML = `
-    <label>Name: <input type="text" name="occupantName[]" required></label>
-    <label>Age: <input type="number" name="occupantAge[]" required></label>
-    <label>Gender: <select name="occupantGender[]" required><option value="Male">Male</option><option value="Female">Female</option></select></label>
-    <label>Relationship: <input type="text" name="occupantRelation[]" required></label>
-    <label>Occupation (if adult): <input type="text" name="occupantOccupation[]"></label>
+    <label>Name: <input type="text" name="occupantName[]" required autocomplete="name"></label>
+    <label>Relationship: 
+      <select name="occupantRelation[]" required>
+        <option value="">Select</option>
+        <option value="Spouse">Spouse</option>
+        <option value="Child">Child</option>
+        <option value="Other">Other</option>
+      </select>
+    </label>
+    <label>Age: 
+      <select name="occupantAge[]" required>
+        <option value="">Select</option>
+        <option value="0-12">0-12</option>
+        <option value="13-17">13-17</option>
+        <option value="18+">18+</option>
+      </select>
+    </label>
+    <label>Gender: 
+      <select name="occupantGender[]" required autocomplete="sex">
+        <option value="">Select</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+      </select>
+    </label>
   `;
   document.getElementById('occupants').appendChild(div);
 }
@@ -75,9 +101,8 @@ if (document.getElementById('applicationForm')) {
     const ages = formData.getAll('occupantAge[]');
     const genders = formData.getAll('occupantGender[]');
     const relations = formData.getAll('occupantRelation[]');
-    const occupations = formData.getAll('occupantOccupation[]');
     for (let i = 0; i < names.length; i++) {
-      data.occupants.push({ name: names[i], age: ages[i], gender: genders[i], relation: relations[i], occupation: occupations[i] });
+      data.occupants.push({ name: names[i], age: ages[i], gender: genders[i], relation: relations[i] });
     }
     data.references = [];
     const refNames = formData.getAll('refName[]');
