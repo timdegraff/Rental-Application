@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rental Application - 11475 Billman Rd</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js"></script>
+</head>
+<body>
+    <div id="content" style="display: none;">
+        <header>
+            <h1>Higgins Woodland Retreat - Rental Application</h1>
+            <p>Fully furnished 1450 sqft 3 bed 2 full bath. On 2.5 acres of heavy woods. Very private! 1 mile from downtown Roscommon. 3 miles from Higgins Lake. Has laundry and storage shed.</p>
+            <p>Monthly Rent: $1500 | Security Deposit: $3000 (first + last month's rent) | Lease: Sept 2025 - May 2026 (extendable, not guaranteed)</p>
+            <p>Utilities: Tenant pays propane/electric; Landlord covers water (well), septic, garbage, propane tank fee.</p>
+            <p>Pets: Generally not allowed; exceptions considered with details + extra $1500 deposit.</p>
+            <p>Smoking: Prohibited. Max Residents: 6 | Max Visiting Guests: 4 | Background/Credit Check: $47 if advancing (free application).</p>
+            <p>Rules: Tenant responsible for lawn mowing/snow plowing ($25/mow or plow if landlord provides). Plenty of parking. No subletting without consent.</p>
+            <p>Availability: Sept 2025. <a href="https://www.airbnb.com/rooms/1264456225307362567" target="_blank">View on Airbnb</a></p>
+            <div class="thumbnail-grid">
+                <img src="images/photo1.jpg" alt="Property 1" onclick="openModal(0)">
+                <img src="images/photo2.jpg" alt="Property 2" onclick="openModal(1)">
+                <img src="images/photo3.jpg" alt="Property 3" onclick="openModal(2)">
+                <img src="images/photo4.jpg" alt="Property 4" onclick="openModal(3)">
+            </div>
+        </header>
+        <form id="applicationForm">
+            <h2>Applicant Information</h2>
+            <label>Full Name: <input type="text" name="fullName" required></label>
+            <label>Date of Birth: <input type="date" name="dob" required></label>
+            <label>Current Address: <input type="text" name="currentAddress" required></label>
+            <label>Phone: <input type="tel" name="phone" required></label>
+            <label>Email: <input type="email" name="email" required></label>
+            <h3>Employment</h3>
+            <label>Job Title: <input type="text" name="jobTitle" required></label>
+            <label>Employer: <input type="text" name="employer" required></label>
+            <label>Length of Employment (years): <input type="number" name="employmentLength" required></label>
+            <label>Monthly Income: <input type="number" name="income" required></label>
+            <h3>Occupants (Max 6, including yourself)</h3>
+            <div id="occupants">
+                <div class="occupant">
+                    <label>Name: <input type="text" name="occupantName[]" required></label>
+                    <label>Age: <input type="number" name="occupantAge[]" required></label>
+                    <label>Gender: <select name="occupantGender[]" required><option value="Male">Male</option><option value="Female">Female</option></select></label>
+                    <label>Relationship: <input type="text" name="occupantRelation[]" required></label>
+                    <label>Occupation (if adult): <input type="text" name="occupantOccupation[]"></label>
+                </div>
+            </div>
+            <button type="button" onclick="addOccupant()">+ Add Occupant</button>
+            <h3>Pet Details (if requesting exception)</h3>
+            <label>Type/Breed: <input type="text" name="petType"></label>
+            <label>Age: <input type="number" name="petAge"></label>
+            <label>Weight: <input type="number" name="petWeight"></label>
+            <label>Behavior Description: <textarea name="petBehavior"></textarea></label>
+            <h3>References (2 required)</h3>
+            <div class="reference">
+                <label>Name: <input type="text" name="refName[]" required></label>
+                <label>Phone: <input type="tel" name="refPhone[]" required></label>
+                <label>Relationship: <input type="text" name="refRelation[]" required></label>
+            </div>
+            <div class="reference">
+                <label>Name: <input type="text" name="refName[]" required></label>
+                <label>Phone: <input type="tel" name="refPhone[]" required></label>
+                <label>Relationship: <input type="text" name="refRelation[]" required></label>
+            </div>
+            <h3>Emergency Contact</h3>
+            <label>Name: <input type="text" name="emergencyName" required></label>
+            <label>Phone: <input type="tel" name="emergencyPhone" required></label>
+            <label>Relationship: <input type="text" name="emergencyRelation" required></label>
+            <h3>Personal Message</h3>
+            <textarea name="personalMessage" placeholder="Why you're looking for a new place" required></textarea>
+            <h3>Comments/Questions</h3>
+            <textarea name="comments"></textarea>
+            <h3>Upload ID (Driver's License, max 5MB, JPG/PNG/JPEG)</h3>
+            <input type="file" name="idUpload" accept="image/jpeg,image/png,image/jpg" capture="environment">
+            <button type="submit">Submit Application</button>
+        </form>
+        <div id="modal" class="modal">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <img class="modal-content" id="modalImage">
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
