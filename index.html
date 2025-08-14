@@ -4,11 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rental Application - 11475 Billman Rd</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=20250813">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <script type="module" src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js"></script>
-    <script type="module" src="script.js"></script>
+    <script type="module" src="script.js?v=20250813"></script>
 </head>
 <body style="background-color: #E6F3E6;">
     <div id="content" style="display: none;">
@@ -23,7 +26,7 @@
         <p>Utilities: Tenant pays propane/electric; Landlord covers water (well), septic, garbage, propane tank fee.</p>
         <p>Pets: Generally not allowed; exceptions may be considered with details + extra month's security deposit (refundable if no damage occurs)</p>
         <p>Smoking: Prohibited</p>
-        <p>Max Residents: 6 | Max Visiting Guests: 4 |</p>
+        <p>Max Residents: 6 | Max Visiting Guests: 4</p>
         <p>Application Fee: Free</p>
         <p>Background/Credit Check: $47 if advancing</p>
         <p>Rules: Tenant responsible for lawn mowing/snow plowing ($25/mow or plow if landlord provides). Plenty of parking. No subletting without consent.</p>
@@ -61,12 +64,31 @@
             <label>Monthly Income: <input type="number" name="income" required autocomplete="transaction-amount"></label>
             <h3>Occupants (Max 6, including yourself)</h3>
             <div id="occupants">
-                <div class="occupant">
+                <div class="occupant-row">
                     <label>Name: <input type="text" name="occupantName[]" required autocomplete="name"></label>
-                    <label>Age: <input type="number" name="occupantAge[]" required></label>
-                    <label>Gender: <select name="occupantGender[]" required autocomplete="sex"><option value="Male">Male</option><option value="Female">Female</option></select></label>
-                    <label>Relationship: <input type="text" name="occupantRelation[]" required></label>
-                    <label>Occupation (if adult): <input type="text" name="occupantOccupation[]" autocomplete="organization-title"></label>
+                    <label>Relationship: 
+                        <select name="occupantRelation[]" required>
+                            <option value="">Select</option>
+                            <option value="Spouse">Spouse</option>
+                            <option value="Child">Child</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </label>
+                    <label>Age: 
+                        <select name="occupantAge[]" required>
+                            <option value="">Select</option>
+                            <option value="0-12">0-12</option>
+                            <option value="13-17">13-17</option>
+                            <option value="18+">18+</option>
+                        </select>
+                    </label>
+                    <label>Gender: 
+                        <select name="occupantGender[]" required autocomplete="sex">
+                            <option value="">Select</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                    </label>
                 </div>
             </div>
             <button type="button" id="addOccupantBtn" onclick="addOccupant()">+ Add Occupant</button>
