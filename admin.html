@@ -12,17 +12,18 @@
     <script type="module" src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
     <script type="module" src="script.js?v=20250813"></script>
     <style>
-        th { cursor: pointer; }
+        body { font-family: 'Arial, sans-serif'; background-color: #E6F3E6; margin: 0; padding: 20px; }
+        h1 { font-family: 'Playfair Display', serif; color: #228B22; text-align: center; }
+        table { border-collapse: collapse; width: 100%; min-width: 1200px; background: #fff; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; cursor: pointer; }
         th.sorted-asc:after { content: " ↑"; }
         th.sorted-desc:after { content: " ↓"; }
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background: rgba(0,0,0,0.5); }
-        .modal-content { background: #fff; margin: 15% auto; padding: 20px; width: 70%; max-width: 500px; border-radius: 5px; }
-        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; }
-        .close:hover, .close:focus { color: black; text-decoration: none; cursor: pointer; }
-        .notes-input { width: 100%; margin-top: 10px; padding: 5px; }
+        tbody tr:hover { background-color: #f5f5f5; }
+        .modal { display: none; }
     </style>
 </head>
-<body style="background-color: #E6F3E6;">
+<body>
     <div id="adminContent" style="display: none;">
         <h1>Higgins Woodland Retreat - Admin Panel</h1>
         <table id="applicationsTable">
@@ -35,18 +36,21 @@
                     <th onclick="sortTable(4)" id="sortJob">Job Title</th>
                     <th onclick="sortTable(5)" id="sortCompany">Company Name</th>
                     <th onclick="sortTable(6)" id="sortDate">Date Submitted</th>
-                    <th onclick="sortTable(7)" id="sortMessage">Personal Message Preview</th>
-                    <th>Application</th>
+                    <th onclick="sortTable(7)" id="sortMessage">Personal Message</th>
+                    <th onclick="sortTable(8)" id="sortDOB">Date of Birth</th>
+                    <th onclick="sortTable(9)" id="sortAddress">Current Address</th>
+                    <th onclick="sortTable(10)" id="sortPhone">Phone</th>
+                    <th onclick="sortTable(11)" id="sortEmail">Email</th>
+                    <th onclick="sortTable(12)" id="sortEmpLength">Employment Length</th>
+                    <th onclick="sortTable(13)" id="sortPetType">Pet Type</th>
+                    <th onclick="sortTable(14)" id="sortPetAge">Pet Age</th>
+                    <th onclick="sortTable(15)" id="sortPetWeight">Pet Weight</th>
+                    <th onclick="sortTable(16)" id="sortPetBehavior">Pet Behavior</th>
+                    <th onclick="sortTable(17)" id="sortComments">Comments</th>
                 </tr>
             </thead>
             <tbody></tbody>
         </table>
-    </div>
-    <div id="detailModal" class="modal">
-        <span class="close" onclick="closeDetailModal()">×</span>
-        <div class="modal-content" id="detailContent"></div>
-        <textarea id="notesInput" class="notes-input" placeholder="Add your notes here..."></textarea>
-        <button id="saveNotesBtn">Save Notes</button>
     </div>
     <div id="modal" class="modal">
         <span class="close" onclick="closeModal()">×</span>
