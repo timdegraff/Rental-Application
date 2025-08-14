@@ -119,9 +119,13 @@ if (document.getElementById('applicationForm')) {
     data.idUrl = idUrl;
 
     await addDoc(collection(db, 'applications'), data);
-    alert('Application submitted!');
-    form.reset();
-    checkFormValidity(); // Reset button state
+    // Clear the page and show thank-you message
+    document.getElementById('content').innerHTML = `
+      <header>
+          <h1>Higgins Woodland Retreat - Rental Application</h1>
+      </header>
+      <p style="text-align: center;">Thank you for your application. We will be in touch soon!</p>
+    `;
   });
 }
 
