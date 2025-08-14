@@ -28,19 +28,14 @@
                 <label>Relationship: 
                     <select name="occupantRelation[]" required>
                         <option value="">Select</option>
+                        <option value="Self">Self</option>
                         <option value="Spouse">Spouse</option>
                         <option value="Child">Child</option>
+                        <option value="Parent">Parent</option>
                         <option value="Other">Other</option>
                     </select>
                 </label>
-                <label>Age: 
-                    <select name="occupantAge[]" required>
-                        <option value="">Select</option>
-                        <option value="0-12">0-12</option>
-                        <option value="13-17">13-17</option>
-                        <option value="18+">18+</option>
-                    </select>
-                </label>
+                <label>Age: <input type="text" name="occupantAge[]" required></label>
                 <label>Gender: 
                     <select name="occupantGender[]" required autocomplete="sex">
                         <option value="">Select</option>
@@ -48,8 +43,16 @@
                         <option value="Female">Female</option>
                     </select>
                 </label>
+                ${occupantCount > 1 ? '<button type="button" class="delete-occupant" onclick="deleteOccupant(this)">X</button>' : ''}
             `;
             document.getElementById('occupants').appendChild(div);
+        }
+
+        function deleteOccupant(button) {
+            if (occupantCount > 1) {
+                button.parentElement.remove();
+                occupantCount--;
+            }
         }
     </script>
 </head>
@@ -105,25 +108,20 @@
             <h3>Occupants (Max 6, including yourself)</h3>
             <div id="occupants">
                 <div class="occupant-row">
-                    <label>Name: <input type="text" name="occupantName[]" autocomplete="name"></label>
+                    <label>Name: <input type="text" name="occupantName[]" required autocomplete="name"></label>
                     <label>Relationship: 
-                        <select name="occupantRelation[]">
+                        <select name="occupantRelation[]" required>
                             <option value="">Select</option>
+                            <option value="Self">Self</option>
                             <option value="Spouse">Spouse</option>
                             <option value="Child">Child</option>
+                            <option value="Parent">Parent</option>
                             <option value="Other">Other</option>
                         </select>
                     </label>
-                    <label>Age: 
-                        <select name="occupantAge[]">
-                            <option value="">Select</option>
-                            <option value="0-12">0-12</option>
-                            <option value="13-17">13-17</option>
-                            <option value="18+">18+</option>
-                        </select>
-                    </label>
+                    <label>Age: <input type="text" name="occupantAge[]" required></label>
                     <label>Gender: 
-                        <select name="occupantGender[]" autocomplete="sex">
+                        <select name="occupantGender[]" required autocomplete="sex">
                             <option value="">Select</option>
                             <option value="Male">Male</option>
                             <option value="Female">Female</option>
