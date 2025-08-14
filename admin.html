@@ -4,25 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Rental Applications</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
+    <link rel="stylesheet" href="styles.css?v=20250813">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <script type="module" src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
+    <script type="module" src="script.js?v=20250813"></script>
 </head>
-<body>
+<body style="background-color: #E6F3E6;">
     <div id="adminContent" style="display: none;">
-        <h1>Rental Applications</h1>
+        <h1>Higgins Woodland Retreat - Admin Panel</h1>
         <table id="applicationsTable">
             <thead>
                 <tr>
-                    <th onclick="sortTable(0)">Name</th>
+                    <th onclick="sortTable(0)">Full Name</th>
                     <th onclick="sortTable(1)">Income</th>
                     <th onclick="sortTable(2)">Submitted</th>
-                    <th>Details</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody></tbody>
         </table>
     </div>
-    <script src="script.js"></script>
+    <div id="modal" class="modal">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <img class="modal-content" id="modalImage">
+    </div>
 </body>
 </html>
