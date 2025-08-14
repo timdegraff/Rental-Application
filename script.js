@@ -208,11 +208,8 @@ if (document.getElementById('applicationForm')) {
         for (let i = 0; i < refNames.length; i++) {
           data.references.push({ name: refNames[i], phone: refPhones[i], relation: refRelations[i] });
         }
-        if (data.submitted instanceof Timestamp) {
-          data.submitted = data.submitted.toDate();
-        } else {
-          data.submitted = new Date();
-        }
+        // Capture submission time on button click
+        data.submitted = new Date().toISOString();
 
         await addDoc(collection(db, 'applications'), data);
         document.getElementById('content').innerHTML = `
@@ -339,7 +336,7 @@ function sortTable(n) {
         let shouldSwitch = false;
         const x = rows[i].getElementsByTagName('TD')[n];
         const y = rows[i + 1].getElementsByTagName('TD')[n];
-        if (x && y) {
+        if (x && y && x.innerHTML && y.innerHTML) {
           if (dir === 'asc') {
             if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
               shouldSwitch = true;
