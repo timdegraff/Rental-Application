@@ -15,6 +15,11 @@
         th { cursor: pointer; }
         th.sorted-asc:after { content: " ↑"; }
         th.sorted-desc:after { content: " ↓"; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background: rgba(0,0,0,0.5); }
+        .modal-content { background: #fff; margin: 15% auto; padding: 20px; width: 70%; max-width: 500px; border-radius: 5px; }
+        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; }
+        .close:hover, .close:focus { color: black; text-decoration: none; cursor: pointer; }
+        .notes-input { width: 100%; margin-top: 10px; padding: 5px; }
     </style>
 </head>
 <body style="background-color: #E6F3E6;">
@@ -29,7 +34,7 @@
                     <th onclick="sortTable(3)" id="sortIncome">Income</th>
                     <th onclick="sortTable(4)" id="sortJob">Job Title</th>
                     <th onclick="sortTable(5)" id="sortCompany">Company Name</th>
-                    <th onclick="sortTable(6)" id="sortTime">Timestamp (EST)</th>
+                    <th onclick="sortTable(6)" id="sortDate">Date Submitted</th>
                     <th onclick="sortTable(7)" id="sortMessage">Personal Message Preview</th>
                     <th>Application</th>
                 </tr>
@@ -40,6 +45,8 @@
     <div id="detailModal" class="modal">
         <span class="close" onclick="closeDetailModal()">×</span>
         <div class="modal-content" id="detailContent"></div>
+        <textarea id="notesInput" class="notes-input" placeholder="Add your notes here..."></textarea>
+        <button id="saveNotesBtn">Save Notes</button>
     </div>
     <div id="modal" class="modal">
         <span class="close" onclick="closeModal()">×</span>
