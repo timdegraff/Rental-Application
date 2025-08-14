@@ -43,12 +43,44 @@ function closeModal() {
   }
 }
 
+// Move checkFormValidity outside the block
+function checkFormValidity(form) {
+  const fullName = form.fullName.value.trim();
+  const dob = form.dob.value;
+  const currentAddress = form.currentAddress.value.trim();
+  const phone = form.phone.value.trim();
+  const email = form.email.value.trim();
+  const jobTitle = form.jobTitle.value.trim();
+  const employer = form.employer.value.trim();
+  const employmentLength = form.employmentLength.value.trim();
+  const income = form.income.value.trim();
+  const refNames = form.querySelectorAll('input[name="refName[]"]');
+  const refPhones = form.querySelectorAll('input[name="refPhone[]"]');
+  const refRelations = form.querySelectorAll('input[name="refRelation[]"]');
+  const personalMessage = form.personalMessage.value.trim();
+
+  const allRefsValid = refNames.length === 2 && 
+                      Array.from(refNames).every(r => r.value.trim()) &&
+                      Array.from(refPhones).every(r => r.value.trim()) &&
+                      Array.from(refRelations).every(r => r.value.trim());
+
+  return fullName && dob && currentAddress && phone && email && 
+         jobTitle && employer && employmentLength && income && 
+         allRefsValid && personalMessage;
+}
+
 if (document.getElementById('applicationForm')) {
   signInAnonymously(auth).then(() => {
     const passcode = prompt('Enter passcode:');
     if (passcode === 'Daisy44') {
       document.getElementById('content').style.display = 'block';
-      checkFormValidity(); // Initial validation
+      const form = document.getElementById('applicationForm');
+      const submitBtn = document.getElementById('submitBtn');
+      if (form && submitBtn) {
+        checkFormValidity(form); // Initial validation
+      } else {
+        console.error('Form or submit button not found');
+      }
     } else {
       alert('Invalid passcode');
     }
@@ -61,32 +93,9 @@ if (document.getElementById('applicationForm')) {
   const submitBtn = document.getElementById('submitBtn');
 
   if (form && submitBtn) {
-    form.addEventListener('input', checkFormValidity);
-
-    function checkFormValidity() {
-      const fullName = form.fullName.value.trim();
-      const dob = form.dob.value;
-      const currentAddress = form.currentAddress.value.trim();
-      const phone = form.phone.value.trim();
-      const email = form.email.value.trim();
-      const jobTitle = form.jobTitle.value.trim();
-      const employer = form.employer.value.trim();
-      const employmentLength = form.employmentLength.value.trim();
-      const income = form.income.value.trim();
-      const refNames = form.querySelectorAll('input[name="refName[]"]');
-      const refPhones = form.querySelectorAll('input[name="refPhone[]"]');
-      const refRelations = form.querySelectorAll('input[name="refRelation[]"]');
-      const personalMessage = form.personalMessage.value.trim();
-
-      const allRefsValid = refNames.length === 2 && 
-                          Array.from(refNames).every(r => r.value.trim()) &&
-                          Array.from(refPhones).every(r => r.value.trim()) &&
-                          Array.from(refRelations).every(r => r.value.trim());
-
-      submitBtn.disabled = !(fullName && dob && currentAddress && phone && email && 
-                            jobTitle && employer && employmentLength && income && 
-                            allRefsValid && personalMessage);
-    }
+    form.addEventListener('input', () => {
+      submitBtn.disabled = !checkFormValidity(form);
+    });
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
