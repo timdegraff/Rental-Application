@@ -45,6 +45,10 @@ function closeModal() {
 
 function addOccupant() {
   const occupantsDiv = document.getElementById('occupants');
+  if (!occupantsDiv) {
+    console.error('Occupants div not found');
+    return;
+  }
   let occupantCount = occupantsDiv.children.length + 1;
   if (occupantCount >= 6) {
     alert("Maximum 6 occupants reached.");
@@ -79,7 +83,7 @@ function addOccupant() {
 
 function deleteOccupant(button) {
   const occupantsDiv = document.getElementById('occupants');
-  if (occupantsDiv.children.length > 1) {
+  if (occupantsDiv && occupantsDiv.children.length > 1) {
     button.parentElement.remove();
   }
 }
@@ -116,10 +120,12 @@ if (document.getElementById('applicationForm')) {
       document.getElementById('content').style.display = 'block';
       const form = document.getElementById('applicationForm');
       const submitBtn = document.getElementById('submitBtn');
-      if (form && submitBtn) {
+      const addOccupantBtn = document.getElementById('addOccupantBtn');
+      if (form && submitBtn && addOccupantBtn) {
         submitBtn.disabled = !checkFormValidity(form); // Initial validation
+        addOccupantBtn.addEventListener('click', addOccupant);
       } else {
-        console.error('Form or submit button not found');
+        console.error('Form, submit button, or add occupant button not found');
       }
     } else {
       alert('Invalid passcode');
@@ -131,8 +137,9 @@ if (document.getElementById('applicationForm')) {
 
   const form = document.getElementById('applicationForm');
   const submitBtn = document.getElementById('submitBtn');
+  const addOccupantBtn = document.getElementById('addOccupantBtn');
 
-  if (form && submitBtn) {
+  if (form && submitBtn && addOccupantBtn) {
     form.addEventListener('input', () => {
       submitBtn.disabled = !checkFormValidity(form);
     });
@@ -183,8 +190,10 @@ if (document.getElementById('applicationForm')) {
         alert("Error submitting application: " + error.message);
       }
     });
+
+    addOccupantBtn.addEventListener('click', addOccupant);
   } else {
-    console.error('Form or submit button not found in DOM');
+    console.error('Form, submit button, or add occupant button not found in DOM');
   }
 }
 
@@ -199,11 +208,17 @@ if (document.getElementById('applicationsTable')) {
           tbody.innerHTML = '';
           snapshot.forEach((doc) => {
             const data = doc.data();
+            const occupants = data.occupants || [];
+            const estTime = data.submitted ? new Date(data.submitted).toLocaleString('en-US', { timeZone: 'America/New_York' }) : 'N/A';
             const row = document.createElement('tr');
             row.innerHTML = `
               <td>${data.fullName || 'N/A'}</td>
+              <td>${occupants.length > 0 ? occupants[0].age || 'N/A' : 'N/A'}</td>
+              <td>${occupants.length || 'N/A'}</td>
               <td>${data.income || 'N/A'}</td>
-              <td>${data.submitted ? data.submitted.toLocaleString() : 'N/A'}</td>
+              <td>${data.jobTitle || 'N/A'}</td>
+              <td>${data.employer || 'N/A'}</td>
+              <td>${estTime}</td>
               <td><button onclick="viewDetails('${doc.id}')">View</button></td>
             `;
             tbody.appendChild(row);
@@ -225,7 +240,41 @@ function viewDetails(id) {
   const docRef = doc(db, 'applications', id);
   getDoc(docRef).then((docSnap) => {
     if (docSnap.exists()) {
-      alert(JSON.stringify(docSnap.data(), null, 2));
+      const data = docSnap.data();
+      const content = `
+        <h2>Application Details</h2>
+        <p><strong>Full Name:</strong> ${data.fullName || 'N/A'}</p>
+        <p><strong>Date of Birth:</strong> ${data.dob || 'N/A'}</p>
+        <p><strong>Current Address:</strong> ${data.currentAddress || 'N/A'}</p>
+        <p><strong>Phone:</strong> ${data.phone || 'N/A'}</p>
+        <p><strong>Email:</strong> ${data.email || 'N/A'}</p>
+        <h3>Employment</h3>
+        <p><strong>Job Title:</strong> ${data.jobTitle || 'N/A'}</p>
+        <p><strong>Employer:</strong> ${data.employer || 'N/A'}</p>
+        <p><strong>Length of Employment (years):</strong> ${data.employmentLength || 'N/A'}</p>
+        <p><strong>Monthly Income:</strong> ${data.income || 'N/A'}</p>
+        <h3>Occupants</h3>
+        ${data.occupants && data.occupants.length > 0 ? data.occupants.map(o => `
+          <p><strong>Name:</strong> ${o.name || 'N/A'}, <strong>Relationship:</strong> ${o.relation || 'N/A'}, <strong>Age:</strong> ${o.age || 'N/A'}, <strong>Gender:</strong> ${o.gender || 'N/A'}</p>
+        `).join('') : '<p>No occupants listed</p>'}
+        <h3>References</h3>
+        ${data.references && data.references.length > 0 ? data.references.map(r => `
+          <p><strong>Name:</strong> ${r.name || 'N/A'}, <strong>Phone:</strong> ${r.phone || 'N/A'}, <strong>Relationship:</strong> ${r.relation || 'N/A'}</p>
+        `).join('') : '<p>No references listed</p>'}
+        <h3>Personal Message</h3>
+        <p>${data.personalMessage || 'N/A'}</p>
+        <h3>Comments/Questions</h3>
+        <p>${data.comments || 'N/A'}</p>
+        <p><strong>Submitted:</strong> ${data.submitted ? new Date(data.submitted).toLocaleString('en-US', { timeZone: 'America/New_York' }) : 'N/A'}</p>
+      `;
+      const modal = document.getElementById('detailModal');
+      const contentDiv = document.getElementById('detailContent');
+      if (modal && contentDiv) {
+        contentDiv.innerHTML = content;
+        modal.style.display = 'block';
+      } else {
+        console.error('Detail modal or content div not found');
+      }
     } else {
       alert('Document not found');
     }
@@ -235,10 +284,19 @@ function viewDetails(id) {
   });
 }
 
+function closeDetailModal() {
+  const modal = document.getElementById('detailModal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+}
+
 function sortTable(n) {
   const table = document.getElementById('applicationsTable');
   if (table) {
-    let switching = true, dir = 'asc', switchcount = 0;
+    let switching = true;
+    let dir = localStorage.getItem(`sortDir_${n}`) === 'desc' ? 'desc' : 'asc';
+    let switchcount = 0;
     while (switching) {
       switching = false;
       const rows = table.rows;
@@ -246,13 +304,15 @@ function sortTable(n) {
         let shouldSwitch = false;
         const x = rows[i].getElementsByTagName('TD')[n];
         const y = rows[i + 1].getElementsByTagName('TD')[n];
-        if (dir == 'asc') {
+        if (dir === 'asc') {
           if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
-            shouldSwitch = true; break;
+            shouldSwitch = true;
+            break;
           }
-        } else if (dir == 'desc') {
+        } else if (dir === 'desc') {
           if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
-            shouldSwitch = true; break;
+            shouldSwitch = true;
+            break;
           }
         }
       }
@@ -261,8 +321,10 @@ function sortTable(n) {
         switching = true;
         switchcount++;
       } else {
-        if (switchcount == 0 && dir == 'asc') {
-          dir = 'desc'; switching = true;
+        if (switchcount === 0) {
+          dir = dir === 'asc' ? 'desc' : 'asc';
+          localStorage.setItem(`sortDir_${n}`, dir);
+          switching = true;
         }
       }
     }
