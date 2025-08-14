@@ -91,7 +91,13 @@ if (document.getElementById('applicationForm')) {
       return;
     }
 
-    // Ensure Firebase is ready before submission
+    // Ensure authentication is active
+    const user = auth.currentUser;
+    if (!user) {
+      alert("Authentication required. Please refresh and try again.");
+      return;
+    }
+
     try {
       const formData = new FormData(form);
       const data = Object.fromEntries(formData);
@@ -114,7 +120,7 @@ if (document.getElementById('applicationForm')) {
 
       let idUrl = '';
       const file = formData.get('idUpload');
-      if (file && file.size <= 5000000 && file.size <= 20000000) {
+      if (file && file.size <= 5000000) { // Adjusted to 5MB max for simplicity
         const storageRef = ref(storage, `ids/${Date.now()}_${file.name}`);
         await uploadBytes(storageRef, file);
         idUrl = await getDownloadURL(storageRef);
@@ -131,6 +137,10 @@ if (document.getElementById('applicationForm')) {
       `;
     } catch (error) {
       alert("Error submitting application: " + error.message);
+      // Re-enable form for retry if needed
+      if (error.code === 'storage/unauthorized') {
+        alert("Storage permission issue. Please check Firebase Rules and try again.");
+      }
     }
   });
 }
