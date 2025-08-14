@@ -1,7 +1,6 @@
 // Import Firebase modules
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
 import { getFirestore, collection, addDoc, onSnapshot, getDoc, doc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
 // Your web app's Firebase configuration
@@ -18,7 +17,6 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const storage = getStorage(app);
 const auth = getAuth(app);
 
 const images = [
@@ -91,7 +89,6 @@ if (document.getElementById('applicationForm')) {
       return;
     }
 
-    // Ensure authentication is active
     const user = auth.currentUser;
     if (!user) {
       alert("Authentication required. Please refresh and try again.");
@@ -118,15 +115,6 @@ if (document.getElementById('applicationForm')) {
       }
       data.submitted = new Date();
 
-      let idUrl = '';
-      const file = formData.get('idUpload');
-      if (file && file.size <= 5000000) { // Adjusted to 5MB max for simplicity
-        const storageRef = ref(storage, `ids/${Date.now()}_${file.name}`);
-        await uploadBytes(storageRef, file);
-        idUrl = await getDownloadURL(storageRef);
-      }
-      data.idUrl = idUrl;
-
       await addDoc(collection(db, 'applications'), data);
       // Clear page and show thank-you message
       document.getElementById('content').innerHTML = `
@@ -137,79 +125,9 @@ if (document.getElementById('applicationForm')) {
       `;
     } catch (error) {
       alert("Error submitting application: " + error.message);
-      // Re-enable form for retry if needed
-      if (error.code === 'storage/unauthorized') {
-        alert("Storage permission issue. Please check Firebase Rules and try again.");
-      }
     }
   });
 }
 
 if (document.getElementById('applicationsTable')) {
-  signInAnonymously(auth).then(() => {
-    const passcode = prompt('Enter admin passcode:');
-    if (passcode === 'Porky9') {
-      document.getElementById('adminContent').style.display = 'block';
-      onSnapshot(collection(db, 'applications'), (snapshot) => {
-        const tbody = document.querySelector('#applicationsTable tbody');
-        tbody.innerHTML = '';
-        snapshot.forEach((doc) => {
-          const data = doc.data();
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td>${data.fullName || 'N/A'}</td>
-            <td>${data.income || 'N/A'}</td>
-            <td>${data.submitted ? data.submitted.toLocaleString() : 'N/A'}</td>
-            <td><button onclick="viewDetails('${doc.id}')">View</button></td>
-          `;
-          tbody.appendChild(row);
-        });
-      });
-    } else {
-      alert('Invalid passcode');
-    }
-  }).catch((error) => {
-    alert('Authentication failed: ' + error.message);
-  });
-}
-
-function viewDetails(id) {
-  const docRef = doc(db, 'applications', id);
-  getDoc(docRef).then((docSnap) => {
-    if (docSnap.exists()) {
-      alert(JSON.stringify(docSnap.data(), null, 2));
-    }
-  });
-}
-
-function sortTable(n) {
-  const table = document.getElementById('applicationsTable');
-  let switching = true, dir = 'asc', switchcount = 0;
-  while (switching) {
-    switching = false;
-    const rows = table.rows;
-    for (let i = 1; i < (rows.length - 1); i++) {
-      let shouldSwitch = false;
-      const x = rows[i].getElementsByTagName('TD')[n];
-      const y = rows[i + 1].getElementsByTagName('TD')[n];
-      if (dir == 'asc') {
-        if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
-          shouldSwitch = true; break;
-        }
-      } else if (dir == 'desc') {
-        if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
-          shouldSwitch = true; break;
-        }
-      }
-    }
-    if (shouldSwitch) {
-      rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-      switching = true;
-      switchcount++;
-    } else {
-      if (switchcount == 0 && dir == 'asc') {
-        dir = 'desc'; switching = true;
-      }
-    }
-  }
-}
+  signInAnonymously(auth).then
